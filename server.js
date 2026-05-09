@@ -398,6 +398,8 @@ const server = http.createServer(async (req, res) => {
       const name = String(body.name || "").trim().slice(0, 32);
       if (!name) return sendJson(res, 400, { error: "Name is required" });
       const id = body.playerId && state.players[body.playerId] ? body.playerId : crypto.randomUUID();
+      const isNew = !state.players[id];
+      if (isNew && Object.keys(state.players).length >= 16) return sendJson(res, 400, { error: "Game is full (max 16 players)" });
       state.players[id] = state.players[id] || { id, name, isBachelor: false, joinedAt: Date.now() };
       state.players[id].name = name;
       state.scores[id] = state.scores[id] || 0;
