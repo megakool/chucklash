@@ -449,6 +449,36 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, { state: publicState(player.id) });
     }
 
+    // Video upload (binary body — must come before the generic /api/host/ JSON handler)
+    if (req.method === "POST" && url.pathname === "/api/host/upload-video") {
+      if (!requireHost(req, res)) return;
+      const rawName = String(req.headers["x-filename"] || "video.bin").replace(/[^a-zA-Z0-9._-]/g, "_");
+      const ext = path.extname(rawName).toLowerCase();
+      if (![".mov", ".mp4", ".webm", ".m4v", ".avi"].includes(ext)) {
+        return sendJson(res, 400, { error: "Unsupported file type" });
+      }
+      const filename = `upload-${Date.now()}${ext}`;
+      const videoDir = path.join(PUBLIC_DIR, "videos");
+      fs.mkdirSync(videoDir, { recursive: true });
+      const dest = path.join(videoDir, filename);
+      const ws = fs.createWriteStream(dest);
+      let size = 0, aborted = false;
+      req.on("data", chunk => {
+        size += chunk.length;
+        if (size > 500 * 1024 * 1024) {
+          aborted = true; ws.destroy();
+          try { fs.unlinkSync(dest); } catch {}
+          req.destroy();
+        } else { ws.write(chunk); }
+      });
+      req.on("end", () => {
+        if (aborted) return;
+        ws.end(() => sendJson(res, 200, { url: `/videos/${filename}` }));
+      });
+      req.on("error", () => { ws.destroy(); try { fs.unlinkSync(dest); } catch {} });
+      return;
+    }
+
     // Host actions
     if (req.method === "POST" && url.pathname.startsWith("/api/host/")) {
       if (!requireHost(req, res)) return;
@@ -465,7 +495,7 @@ const server = http.createServer(async (req, res) => {
           text: String(p.text || "").trim(),
           videoUrl: String(p.videoUrl || "").trim(),
           mode: p.mode === "duel" ? "duel" : "all"
-        })).filter(p => p.text);
+        })).filter(p => p.text || p.videoUrl);
         fs.mkdirSync(DATA_DIR, { recursive: true });
         fs.writeFileSync(PROMPTS_FILE, JSON.stringify(prompts, null, 2));
         state.prompts = prompts;

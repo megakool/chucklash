@@ -252,12 +252,55 @@
         font-family: var(--mono);
         font-size: 12px;
         outline: none;
+        min-width: 0;
       }
 
       .pe-card-video-input:focus { color: var(--ink); background: #fffdf8; }
       .pe-card-video-input::placeholder { color: rgba(107,96,85,0.45); }
-
       .pe-card-video-input.has-url { color: var(--clay); }
+
+      .pe-card-upload-label {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+        height: 40px;
+        padding: 0 14px;
+        background: var(--paper-deep);
+        border-left: 1.5px solid var(--ink);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        white-space: nowrap;
+        transition: background 0.12s, color 0.12s;
+        user-select: none;
+      }
+
+      .pe-card-upload-label:hover { background: var(--clay); color: #f3ece0; }
+      .pe-card-upload-label.uploading { opacity: 0.55; cursor: not-allowed; pointer-events: none; }
+
+      .pe-card-file-input { display: none; }
+
+      .pe-card-clear-btn {
+        flex-shrink: 0;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: transparent;
+        border: 0;
+        border-left: 1.5px solid var(--ink);
+        color: var(--muted);
+        font-size: 14px;
+        cursor: pointer;
+        transition: color 0.1s, background 0.1s;
+      }
+
+      .pe-card-clear-btn:hover { color: var(--clay); background: #fff0eb; }
 
       .pe-card-del {
         display: flex;
@@ -377,18 +420,63 @@
           <div class="pe-card-body">
             <textarea class="pe-card-text" rows="3" placeholder="Write the prompt here…">${escHtml(p.text || "")}</textarea>
             <div class="pe-card-video-row">
-              <span class="pe-card-video-tag">Video URL</span>
-              <input class="pe-card-video-input${hasUrl ? " has-url" : ""}" type="url"
-                placeholder="https://youtube.com/watch?v=… (optional)"
+              <span class="pe-card-video-tag">Video</span>
+              <input class="pe-card-video-input${hasUrl ? " has-url" : ""}" type="text"
+                placeholder="Paste URL or upload a file →"
                 value="${escHtml(p.videoUrl || "")}">
+              <label class="pe-card-upload-label" title="Upload video file">
+                <span class="pe-card-upload-text">↑ Upload</span>
+                <input class="pe-card-file-input" type="file" accept="video/*,.mov,.mp4,.m4v">
+              </label>
+              <button class="pe-card-clear-btn" title="Clear video" style="${hasUrl ? "" : "display:none"}">✕</button>
             </div>
           </div>
           <button class="pe-card-del" title="Delete prompt" onclick="deletePrompt(${i})">✕</button>
         `;
 
-        const videoInput = card.querySelector(".pe-card-video-input");
+        const videoInput   = card.querySelector(".pe-card-video-input");
+        const fileInput    = card.querySelector(".pe-card-file-input");
+        const uploadLabel  = card.querySelector(".pe-card-upload-label");
+        const clearBtn     = card.querySelector(".pe-card-clear-btn");
+
         videoInput.addEventListener("input", () => {
-          videoInput.classList.toggle("has-url", videoInput.value.trim().length > 0);
+          const has = videoInput.value.trim().length > 0;
+          videoInput.classList.toggle("has-url", has);
+          clearBtn.style.display = has ? "" : "none";
+        });
+
+        clearBtn.addEventListener("click", () => {
+          videoInput.value = "";
+          videoInput.classList.remove("has-url");
+          clearBtn.style.display = "none";
+        });
+
+        fileInput.addEventListener("change", async () => {
+          const file = fileInput.files[0];
+          if (!file) return;
+          uploadLabel.textContent = "Uploading…";
+          uploadLabel.classList.add("uploading");
+          const uploadText = uploadLabel.querySelector(".pe-card-upload-text");
+          try {
+            const pin = pinInput.value || "chucklash";
+            const res = await fetch("/api/host/upload-video", {
+              method: "POST",
+              headers: { "x-host-pin": pin, "x-filename": file.name },
+              body: file
+            });
+            if (!res.ok) throw new Error((await res.json()).error || "Upload failed");
+            const { url } = await res.json();
+            videoInput.value = url;
+            videoInput.classList.add("has-url");
+            clearBtn.style.display = "";
+            showStatus(`Uploaded: ${file.name} ✓`, "ok");
+          } catch (err) {
+            showStatus("Upload failed: " + err.message, "err");
+          } finally {
+            uploadText.textContent = "↑ Upload";
+            uploadLabel.classList.remove("uploading");
+            fileInput.value = "";
+          }
         });
 
         return card;
@@ -403,7 +491,7 @@
             videoUrl: card.querySelector(".pe-card-video-input").value.trim(),
             mode: orig.mode || "all"
           };
-        }).filter(p => p.text);
+        }).filter(p => p.text || p.videoUrl);
       }
 
       function addPrompt() {
