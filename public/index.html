@@ -12,13 +12,8 @@
   <body class="phone-body">
     <div class="phone-shell">
 
-      <!-- Persistent top nav -->
       <header class="p-nav">
-        <div class="p-nav__brand">
-          <span class="p-nav__sub">Bachelor Party Game</span>
-          <span class="p-nav__title">Chuck-Lash</span>
-        </div>
-        <p id="roomCode" class="room-code">Room ···</p>
+        <span class="p-nav__title">Chuck-Lash</span>
       </header>
 
       <!-- Join screen -->
@@ -37,13 +32,12 @@
         </form>
       </section>
 
-      <!-- Game screen (hidden until joined) -->
+      <!-- Game screen -->
       <section id="gameCard" class="p-game hidden">
 
-        <!-- Dynamic phase content -->
         <div id="status"></div>
 
-        <!-- Answer form — shown during answering phase -->
+        <!-- Answer form -->
         <form id="answerForm" class="p-answer-form hidden">
           <div class="p-field">
             <label for="answerInput">Your answer</label>
@@ -55,13 +49,10 @@
           </div>
         </form>
 
-        <!-- Vote form — shown during voting phase -->
-        <form id="voteForm" class="p-vote-form hidden">
+        <!-- Vote list -->
+        <div id="voteForm" class="p-vote-form hidden">
           <div id="voteList" class="p-vote-list"></div>
-          <div class="p-vote-cta">
-            <button type="submit" class="p-primary-btn">Lock In Votes</button>
-          </div>
-        </form>
+        </div>
 
       </section>
     </div>
