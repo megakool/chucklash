@@ -264,7 +264,16 @@ function serveStatic(req, res) {
     res.end("Forbidden");
     return;
   }
+  const tryHtml = !path.extname(filePath) ? filePath + ".html" : null;
   fs.readFile(filePath, (error, content) => {
+    if (error && tryHtml) {
+      fs.readFile(tryHtml, (err2, content2) => {
+        if (err2) { res.writeHead(404); res.end("Not found"); return; }
+        res.writeHead(200, { "content-type": "text/html; charset=utf-8" });
+        res.end(content2);
+      });
+      return;
+    }
     if (error) {
       res.writeHead(404);
       res.end("Not found");
