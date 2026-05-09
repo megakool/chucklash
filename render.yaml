@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: chuck-lash
+    env: node
+    plan: free
+    buildCommand: ""
+    startCommand: node server.js
+    envVars:
+      - key: HOST_PIN
+        sync: false
+      - key: ROOM_CODE
+        value: CHUCK
