@@ -140,7 +140,7 @@ function renderLobby() {
           <div class="qr-box" id="qrCanvas"></div>
           <div>
             <p class="eyebrow">Join from your phone</p>
-            <div class="join-url">chuck-lash.party</div>
+            <div class="join-url">chucklash.onrender.com</div>
           </div>
         </div>
       </section>
