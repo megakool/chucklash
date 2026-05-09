@@ -12,24 +12,14 @@ const els = {
 let state = null;
 let autoDemoRunning = false;
 
-// ─── Persist PIN ──────────────────────────────────────────────────────────────
-
 const savedPin = localStorage.getItem("clHostPin");
 if (savedPin) els.pinInput.value = savedPin;
-els.pinInput.addEventListener("change", () => {
-  localStorage.setItem("clHostPin", els.pinInput.value);
-});
-
-// ─── API ──────────────────────────────────────────────────────────────────────
+els.pinInput.addEventListener("change", () => localStorage.setItem("clHostPin", els.pinInput.value));
 
 async function api(path, options = {}) {
   const response = await fetch(path, {
     ...options,
-    headers: {
-      "content-type": "application/json",
-      "x-host-pin": els.pinInput.value,
-      ...(options.headers || {})
-    }
+    headers: { "content-type": "application/json", "x-host-pin": els.pinInput.value, ...(options.headers || {}) }
   });
   const body = await response.json();
   if (!response.ok) throw new Error(body.error || "Request failed");
@@ -41,13 +31,9 @@ async function refresh() {
     state = await api("/api/state");
     render();
   } catch (err) {
-    els.hostStage.innerHTML = `<div class="hc-error">
-      <strong>Connection error</strong><br>${escapeHtml(err.message)}
-    </div>`;
+    els.hostStage.innerHTML = `<div class="hc-error"><strong>Connection error</strong><br>${escapeHtml(err.message)}</div>`;
   }
 }
-
-// ─── Demo controls ────────────────────────────────────────────────────────────
 
 document.querySelectorAll("button[data-demo-action]").forEach(button => {
   button.addEventListener("click", async () => {
@@ -61,9 +47,8 @@ els.autoDemoButton.addEventListener("click", async () => {
   autoDemoRunning = true;
   els.autoDemoButton.disabled = true;
   els.autoDemoButton.textContent = "Running…";
-  try {
-    await autoRunDemoRound();
-  } finally {
+  try { await autoRunDemoRound(); }
+  finally {
     autoDemoRunning = false;
     els.autoDemoButton.disabled = false;
     els.autoDemoButton.textContent = "Auto-Run Round";
@@ -72,127 +57,74 @@ els.autoDemoButton.addEventListener("click", async () => {
 });
 
 async function autoRunDemoRound() {
-  await api("/api/host/demo-lobby",  { method: "POST", body: "{}" }); await refresh(); await wait(1400);
-  await api("/api/host/start-game",  { method: "POST", body: "{}" }); await refresh(); await wait(1800);
-  await api("/api/host/demo-answers",{ method: "POST", body: "{}" }); await refresh(); await wait(1200);
-  await api("/api/host/set-phase",   { method: "POST", body: JSON.stringify({ phase: "prompt" }) });   await refresh(); await wait(3000);
-  await api("/api/host/set-phase",   { method: "POST", body: JSON.stringify({ phase: "answers" }) });  await refresh(); await wait(3000);
-  await api("/api/host/set-phase",   { method: "POST", body: JSON.stringify({ phase: "voting" }) });   await refresh(); await wait(1600);
-  await api("/api/host/demo-votes",  { method: "POST", body: "{}" }); await refresh(); await wait(1000);
-  await api("/api/host/set-phase",   { method: "POST", body: JSON.stringify({ phase: "results" }) });
+  await api("/api/host/demo-lobby",       { method: "POST", body: "{}" }); await refresh(); await wait(1400);
+  await api("/api/host/start-game",       { method: "POST", body: "{}" }); await refresh(); await wait(1800);
+  await api("/api/host/demo-answers",     { method: "POST", body: "{}" }); await refresh(); await wait(1200);
+  await api("/api/host/start-round-reveal",{ method: "POST", body: "{}" }); await refresh(); await wait(3000);
+  await api("/api/host/set-phase", { method: "POST", body: JSON.stringify({ phase: "answers" }) }); await refresh(); await wait(3000);
+  await api("/api/host/set-phase", { method: "POST", body: JSON.stringify({ phase: "voting" }) }); await refresh(); await wait(1600);
+  await api("/api/host/demo-votes",       { method: "POST", body: "{}" }); await refresh(); await wait(1000);
+  await api("/api/host/set-phase", { method: "POST", body: JSON.stringify({ phase: "results" }) });
 }
 
-function wait(ms) { return new Promise(resolve => setTimeout(resolve, ms)); }
-
-// ─── Main render ──────────────────────────────────────────────────────────────
+function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
 function render() {
-  if (els.hcRoomBadge && state.roomCode) {
-    els.hcRoomBadge.textContent = `Room ${state.roomCode}`;
-  }
+  if (els.hcRoomBadge && state.roomCode) els.hcRoomBadge.textContent = `Room ${state.roomCode}`;
   renderStatus();
   renderControls();
   renderPlayers();
 }
 
-// ─── Status card ──────────────────────────────────────────────────────────────
-
 function renderStatus() {
-  const { phase, players, answers, voteSummary, currentPromptIndex, totalPrompts } = state;
-  const roundStr = currentPromptIndex >= 0
-    ? `Round ${currentPromptIndex + 1} of ${totalPrompts}`
-    : "";
+  const { phase, players, roundAnswered, roundTotal, round, totalRounds, roundPromptPosition, totalRoundPrompts } = state;
 
-  let dotClass = "active";
-  let phaseLabel = phase.toUpperCase();
-  let heading = "";
-  let note = "";
-  let extraHtml = "";
+  let dotClass = "active", phaseLabel = phase.toUpperCase(), heading = "", note = "", extraHtml = "";
+
+  const promptPos = roundPromptPosition >= 0
+    ? `Prompt ${roundPromptPosition + 1} of ${totalRoundPrompts}`
+    : "";
+  const roundStr = round > 0 ? `Round ${round} of ${totalRounds}${promptPos ? " — " + promptPos : ""}` : "";
 
   switch (phase) {
-    case "lobby": {
-      const n = players.length;
-      dotClass = n >= 3 ? "good" : "active";
+    case "lobby":
+      dotClass = players.length >= 3 ? "good" : "active";
       heading  = "Waiting for players";
-      note     = n === 0
-        ? "Share the room code — players join from their phones."
-        : `${n} player${n === 1 ? "" : "s"} in the room. Assign Chuck, then start.`;
+      note     = players.length === 0 ? "Share the room code to get started." : `${players.length} player${players.length === 1 ? "" : "s"} in the room. Assign Chuck, then start.`;
       break;
-    }
 
     case "answering": {
-      const needed   = answerers().length;
-      const answered = answers.length;
-      const pct      = needed > 0 ? Math.round(answered / needed * 100) : 0;
-      dotClass = answered >= needed && needed > 0 ? "good" : "active";
+      const answered = roundAnswered || 0, total = roundTotal || 0;
+      const pct = total > 0 ? Math.round(answered / total * 100) : 0;
+      dotClass = answered >= total && total > 0 ? "good" : "active";
       heading  = "Players are writing";
-      note     = roundStr;
+      note     = `Round ${round} of ${totalRounds}`;
       extraHtml = `
         <div class="hc-progress">
-          <div class="hc-progress-label">
-            <span>Answers in</span>
-            <span class="hc-progress-frac">${answered}&thinsp;/&thinsp;${needed}</span>
-          </div>
-          <div class="hc-progress-track">
-            <div class="hc-progress-fill" style="width:${pct}%"></div>
-          </div>
+          <div class="hc-progress-label"><span>Answers in</span><span class="hc-progress-frac">${answered}&thinsp;/&thinsp;${total}</span></div>
+          <div class="hc-progress-track"><div class="hc-progress-fill" style="width:${pct}%"></div></div>
         </div>`;
       break;
     }
 
-    case "prompt":
-      dotClass = "good";
-      heading  = "Prompt is live";
-      note     = `${roundStr} · Prompt and video on TV screen`;
-      break;
-
-    case "answers":
-      dotClass = "good";
-      heading  = "Answers on screen";
-      note     = `${answers.length} answer${answers.length === 1 ? "" : "s"} revealed`;
-      break;
-
+    case "prompt":    dotClass="good"; heading="Prompt is live";      note=roundStr; break;
+    case "answers":   dotClass="good"; heading="Answers on screen";   note=`${state.answers.length} answer${state.answers.length===1?"":"s"} revealed — ${roundStr}`; break;
     case "voting": {
-      const totalVotes = Object.values(voteSummary).reduce((s, v) => s + Number(v || 0), 0);
-      const voters     = Object.keys(voteSummary).length;
-      const needed     = answers.length;
-      dotClass = voters >= needed && needed > 0 ? "good" : "active";
-      heading  = "Voting is open";
-      note     = totalVotes > 0
-        ? `${totalVotes} vote${totalVotes === 1 ? "" : "s"} cast so far`
-        : "Waiting for first votes…";
+      const tv = Object.values(state.voteSummary).reduce((s,v)=>s+Number(v||0),0);
+      dotClass = tv > 0 ? "amber" : "active";
+      heading = "Voting is open";
+      note = tv > 0 ? `${tv} vote${tv===1?"":"s"} cast — ${roundStr}` : roundStr;
       break;
     }
-
-    case "results":
-      dotClass = "good";
-      heading  = "Results on screen";
-      note     = roundStr;
-      break;
-
-    case "leaderboard":
-      dotClass = "good";
-      heading  = "Leaderboard shown";
-      note     = roundStr;
-      break;
-
-    case "finished":
-      dotClass = "";
-      phaseLabel = "FINISHED";
-      heading  = "Game over";
-      note     = "Download results to save the night.";
-      break;
-
-    default:
-      heading = phase;
+    case "results":     dotClass="good"; heading="Results on screen";    note=roundStr; break;
+    case "leaderboard": dotClass="good"; heading="Leaderboard shown";    note=roundStr; break;
+    case "finished":    dotClass="";    heading="Game over";             note="Download results to save the night."; break;
+    default: heading = phase;
   }
 
   els.hostStage.innerHTML = `
     <div class="hc-status">
-      <div class="hc-status-phase">
-        <div class="hc-phase-dot ${dotClass}"></div>
-        ${escapeHtml(phaseLabel)}
-      </div>
+      <div class="hc-status-phase"><div class="hc-phase-dot ${dotClass}"></div>${escapeHtml(phaseLabel)}</div>
       <div class="hc-status-body">
         <h2 class="hc-status-heading">${escapeHtml(heading)}</h2>
         ${note ? `<p class="hc-status-note">${escapeHtml(note)}</p>` : ""}
@@ -201,49 +133,49 @@ function renderStatus() {
     </div>`;
 }
 
-// ─── Flow controls ────────────────────────────────────────────────────────────
-
 function renderControls() {
-  const answered   = state.answers.length;
-  const needed     = answerers().length;
-  const allIn      = needed > 0 && answered >= needed;
-  const isLast     = state.currentPromptIndex + 1 >= state.totalPrompts;
-  const nextLabel  = isLast ? "Finish Game" : "Next Round";
+  const answered  = state.roundAnswered || 0;
+  const needed    = state.roundTotal || 0;
+  const allIn     = needed > 0 && answered >= needed;
+  const isLastPrompt = (state.roundPromptPosition + 1) >= state.totalRoundPrompts;
+  const isLastRound  = state.round >= state.totalRounds;
+  const nextPromptLabel = isLastPrompt ? "Round Leaderboard" : "Next Prompt";
+  const nextRoundLabel  = isLastRound  ? "Final Results"     : `Start Round ${state.round + 1}`;
 
   const byPhase = {
     lobby: [
-      { label: "Start Game",       action: "start-game",   primary: true, disabled: state.players.length === 0 },
+      { label: "Start Round 1",    action: "start-game",         primary: true, disabled: state.players.length === 0 },
       { label: "Reload Prompts",   action: "reload-prompts" },
       { label: "Reset",            action: "reset-game" }
     ],
     answering: [
-      { label: "Reveal Prompt",    phase: "prompt",  primary: true, disabled: !allIn },
-      { label: "Reveal Anyway",    phase: "prompt" },
+      { label: "Reveal Prompts",   action: "start-round-reveal", primary: true, disabled: !allIn },
+      { label: "Reveal Anyway",    action: "start-round-reveal" },
       { label: "Reset",            action: "reset-game" }
     ],
     prompt: [
-      { label: "Show Answers",     phase: "answers", primary: true },
+      { label: "Show Answers",     phase: "answers",             primary: true },
       { label: "← Back",          phase: "answering" }
     ],
     answers: [
-      { label: "Open Voting",      phase: "voting",  primary: true },
-      { label: nextLabel,          action: "next-prompt" },
+      { label: "Open Voting",      phase: "voting",              primary: true },
+      { label: nextPromptLabel,    action: "next-prompt" },
       { label: "Leaderboard",      phase: "leaderboard" }
     ],
     voting: [
-      { label: "Show Results",     phase: "results", primary: true },
+      { label: "Show Results",     phase: "results",             primary: true },
       { label: "← Show Answers",  phase: "answers" }
     ],
     results: [
-      { label: nextLabel,          action: "next-prompt", primary: true },
+      { label: nextPromptLabel,    action: "next-prompt",        primary: true },
       { label: "Leaderboard",      phase: "leaderboard" }
     ],
     leaderboard: [
-      { label: nextLabel,          action: "next-prompt", primary: true },
+      { label: nextRoundLabel,     action: "start-next-round",   primary: true },
       { label: "End Game",         phase: "finished" }
     ],
     finished: [
-      { label: "Reset Game",       action: "reset-game", primary: true }
+      { label: "Reset Game",       action: "reset-game",         primary: true }
     ]
   };
 
@@ -251,19 +183,15 @@ function renderControls() {
   const primary   = controls.find(c => c.primary);
   const secondary = controls.filter(c => !c.primary);
 
-  // Primary button
   els.flowControlsPrimary.innerHTML = primary ? `
     <button type="button" class="hc-primary-btn"
       ${primary.action ? `data-action="${escapeHtml(primary.action)}"` : ""}
       ${primary.phase  ? `data-phase="${escapeHtml(primary.phase)}"` : ""}
       ${primary.disabled ? "disabled" : ""}>
       <span>${escapeHtml(primary.label)}</span>
-      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
-        <path d="M2 7h10M8 3l4 4-4 4"/>
-      </svg>
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M2 7h10M8 3l4 4-4 4"/></svg>
     </button>` : "";
 
-  // Secondary buttons
   els.flowControlsSecondary.innerHTML = secondary.map(c => `
     <button type="button" class="hc-secondary-btn"
       ${c.action ? `data-action="${escapeHtml(c.action)}"` : ""}
@@ -272,7 +200,6 @@ function renderControls() {
       ${escapeHtml(c.label)}
     </button>`).join("");
 
-  // Attach listeners to both containers
   [els.flowControlsPrimary, els.flowControlsSecondary].forEach(container => {
     container.querySelectorAll("button[data-action]").forEach(btn => {
       btn.addEventListener("click", async () => {
@@ -282,22 +209,15 @@ function renderControls() {
     });
     container.querySelectorAll("button[data-phase]").forEach(btn => {
       btn.addEventListener("click", async () => {
-        await api("/api/host/set-phase", {
-          method: "POST",
-          body: JSON.stringify({ phase: btn.dataset.phase })
-        });
+        await api("/api/host/set-phase", { method: "POST", body: JSON.stringify({ phase: btn.dataset.phase }) });
         await refresh();
       });
     });
   });
 }
 
-// ─── Player list ──────────────────────────────────────────────────────────────
-
 function renderPlayers() {
-  if (els.hcPlayerCount) {
-    els.hcPlayerCount.textContent = `${state.players.length} in room`;
-  }
+  if (els.hcPlayerCount) els.hcPlayerCount.textContent = `${state.players.length} in room`;
 
   if (state.players.length === 0) {
     els.playerAdmin.innerHTML = `<p class="hc-empty">No players yet. Share the room code to get people in.</p>`;
@@ -309,9 +229,7 @@ function renderPlayers() {
       <span class="hc-player-name">${escapeHtml(player.name)}</span>
       ${player.isBachelor ? `<span class="hc-bachelor-tag">★ Bachelor</span>` : ""}
       <div class="hc-player-actions">
-        <button type="button"
-          class="hc-player-btn${player.isBachelor ? " is-bachelor" : ""}"
-          data-bachelor="${player.id}">
+        <button type="button" class="hc-player-btn${player.isBachelor ? " is-bachelor" : ""}" data-bachelor="${player.id}">
           ${player.isBachelor ? "★ Set" : "Set ★"}
         </button>
         <button type="button" class="hc-player-btn remove" data-remove="${player.id}">×</button>
@@ -320,41 +238,22 @@ function renderPlayers() {
 
   els.playerAdmin.querySelectorAll("button[data-bachelor]").forEach(btn => {
     btn.addEventListener("click", async () => {
-      await api("/api/host/set-bachelor", {
-        method: "POST",
-        body: JSON.stringify({ playerId: btn.dataset.bachelor })
-      });
+      await api("/api/host/set-bachelor", { method: "POST", body: JSON.stringify({ playerId: btn.dataset.bachelor }) });
       await refresh();
     });
   });
-
   els.playerAdmin.querySelectorAll("button[data-remove]").forEach(btn => {
     btn.addEventListener("click", async () => {
-      await api("/api/host/remove-player", {
-        method: "POST",
-        body: JSON.stringify({ playerId: btn.dataset.remove })
-      });
+      await api("/api/host/remove-player", { method: "POST", body: JSON.stringify({ playerId: btn.dataset.remove }) });
       await refresh();
     });
   });
-}
-
-// ─── Helpers ──────────────────────────────────────────────────────────────────
-
-function answerers() {
-  if (!state.prompt) return [];
-  if ((state.prompt.mode || "all") === "duel") {
-    return state.players.filter(p => state.currentDuelPlayerIds.includes(p.id));
-  }
-  return state.players;
 }
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, c =>
     ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;" }[c]));
 }
-
-// ─── Poll ─────────────────────────────────────────────────────────────────────
 
 setInterval(refresh, 1200);
 refresh();
