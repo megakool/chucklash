@@ -3,7 +3,8 @@ services:
     name: chuck-lash
     env: node
     plan: free
-    buildCommand: ""
+    branch: master
+    buildCommand: npm install
     startCommand: node server.js
     envVars:
       - key: HOST_PIN
