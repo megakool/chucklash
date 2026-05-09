@@ -385,6 +385,8 @@ h3 {
   flex: 1;
   min-height: 0;
   padding: 22px 0 10px;
+  display: flex;
+  flex-direction: column;
 }
 
 .screen-footer {
@@ -409,6 +411,7 @@ h3 {
   display: grid;
   grid-template-columns: 1.08fr 1fr;
   gap: 48px;
+  flex: 1;
 }
 
 .screen-lobby h2 {
@@ -545,7 +548,8 @@ h3 {
   grid-template-columns: 1fr 1fr;
   gap: 48px;
   align-items: center;
-  min-height: 620px;
+  align-content: center;
+  flex: 1;
 }
 
 .stamp-row {
@@ -665,7 +669,7 @@ h3 {
 
 .video-state {
   position: relative;
-  min-height: 100%;
+  flex: 1;
   display: grid;
   grid-template-rows: 1fr auto;
   background: var(--ink);
@@ -724,7 +728,7 @@ h3 {
 .text-prompt-state {
   display: grid;
   align-content: center;
-  min-height: 100%;
+  flex: 1;
   padding: 34px 0 42px;
 }
 
@@ -757,7 +761,7 @@ h3 {
 }
 
 .screen-round {
-  min-height: 620px;
+  flex: 1;
 }
 
 .round-heading {
@@ -828,9 +832,9 @@ h3 {
 .card-text {
   margin: 0;
   font-family: var(--serif);
-  font-size: clamp(22px, 2.6vw, 38px);
+  font-size: clamp(16px, 2vw, 30px);
   font-style: italic;
-  line-height: 1.15;
+  line-height: 1.2;
 }
 
 /* Bachelor ribbon — subtle top-right tag */
@@ -1024,6 +1028,7 @@ h3 {
   grid-template-columns: 1fr 1fr;
   gap: 48px;
   align-items: start;
+  flex: 1;
 }
 
 .lb-section-label {
