@@ -1,3 +1,4 @@
 node_modules/
 data/results.json
 .env
+public/videos/
