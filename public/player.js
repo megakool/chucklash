@@ -57,6 +57,14 @@ async function refresh() {
     render();
   } catch (error) {
     console.warn(error);
+    if (els.gameCard && !els.gameCard.classList.contains("hidden")) {
+      els.status.innerHTML = `
+        <div class="p-screen p-screen--waiting">
+          <div class="p-waiting-dots"><span></span><span></span><span></span></div>
+          <p class="p-waiting-label">Reconnecting…</p>
+        </div>
+      `;
+    }
   }
 }
 

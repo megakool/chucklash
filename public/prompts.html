@@ -1,0 +1,492 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Prompt Editor — Chuck-Lash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥂</text></svg>">
+    <style>
+      :root {
+        --paper: #f3ece0;
+        --paper-deep: #ebe2d2;
+        --ink: #1a1612;
+        --clay: #b54a1f;
+        --muted: #6b6055;
+        --white: #fffaf0;
+        --mono: "JetBrains Mono", ui-monospace, monospace;
+        --serif: "DM Serif Display", Georgia, serif;
+        --sans: Inter, system-ui, sans-serif;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--paper);
+        color: var(--ink);
+        font-family: var(--sans);
+      }
+
+      /* ── Header ── */
+      .pe-header {
+        position: sticky;
+        top: 0;
+        z-index: 100;
+        display: flex;
+        align-items: center;
+        gap: 24px;
+        padding: 14px 36px;
+        background: var(--ink);
+        color: var(--paper);
+        border-bottom: 2px solid var(--ink);
+      }
+
+      .pe-header h1 {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 28px;
+        font-weight: 400;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        white-space: nowrap;
+      }
+
+      .pe-header h1 span { color: var(--clay); }
+
+      .pe-header-label {
+        color: rgba(243,236,224,0.45);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .pe-header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-left: auto;
+      }
+
+      .pe-count {
+        color: rgba(243,236,224,0.5);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        white-space: nowrap;
+      }
+
+      .pe-save-btn {
+        min-height: 36px;
+        padding: 0 20px;
+        background: var(--clay);
+        color: var(--paper);
+        border: none;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: opacity 0.15s;
+        white-space: nowrap;
+      }
+
+      .pe-save-btn:hover { opacity: 0.85; }
+      .pe-save-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      .pe-status {
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        white-space: nowrap;
+        transition: opacity 0.3s;
+      }
+
+      .pe-status.ok   { color: #6dbf6d; }
+      .pe-status.err  { color: #e05252; }
+      .pe-status.idle { opacity: 0; }
+
+      /* ── PIN bar ── */
+      .pe-pin-bar {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 12px 36px;
+        background: #2a2420;
+        border-bottom: 1px solid rgba(243,236,224,0.1);
+      }
+
+      .pe-pin-label {
+        color: rgba(243,236,224,0.5);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        flex-shrink: 0;
+      }
+
+      .pe-pin-input {
+        width: 200px;
+        border: 1px solid rgba(243,236,224,0.2);
+        border-radius: 0;
+        padding: 6px 10px;
+        background: rgba(243,236,224,0.06);
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 12px;
+        outline: none;
+      }
+
+      .pe-pin-input:focus { border-color: var(--clay); }
+
+      .pe-pin-note {
+        color: rgba(243,236,224,0.3);
+        font-family: var(--mono);
+        font-size: 10px;
+        letter-spacing: 1px;
+      }
+
+      /* ── Main body ── */
+      .pe-body {
+        max-width: 860px;
+        margin: 0 auto;
+        padding: 36px 36px 80px;
+      }
+
+      /* ── Prompt card ── */
+      .pe-list {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+      }
+
+      .pe-card {
+        display: grid;
+        grid-template-columns: 36px 1fr auto;
+        gap: 0;
+        border: 1.5px solid var(--ink);
+        background: var(--white);
+      }
+
+      .pe-card-num {
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 18px 0 0;
+        background: var(--paper-deep);
+        border-right: 1.5px solid var(--ink);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: var(--muted);
+        flex-shrink: 0;
+      }
+
+      .pe-card-body {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+      }
+
+      .pe-card-text {
+        width: 100%;
+        min-height: 90px;
+        border: 0;
+        border-bottom: 1.5px solid var(--ink);
+        border-radius: 0;
+        padding: 16px 20px;
+        background: transparent;
+        color: var(--ink);
+        font-family: var(--serif);
+        font-size: 22px;
+        font-style: italic;
+        line-height: 1.2;
+        resize: none;
+        outline: none;
+      }
+
+      .pe-card-text:focus { background: #fffdf8; }
+
+      .pe-card-video-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
+      }
+
+      .pe-card-video-tag {
+        flex-shrink: 0;
+        padding: 0 14px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        background: var(--paper-deep);
+        border-right: 1.5px solid var(--ink);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        white-space: nowrap;
+      }
+
+      .pe-card-video-input {
+        flex: 1;
+        height: 40px;
+        border: 0;
+        border-radius: 0;
+        padding: 0 14px;
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 12px;
+        outline: none;
+      }
+
+      .pe-card-video-input:focus { color: var(--ink); background: #fffdf8; }
+      .pe-card-video-input::placeholder { color: rgba(107,96,85,0.45); }
+
+      .pe-card-video-input.has-url { color: var(--clay); }
+
+      .pe-card-del {
+        display: flex;
+        align-items: flex-start;
+        padding: 14px 10px 0;
+        background: transparent;
+        border: 0;
+        border-left: 1.5px solid var(--ink);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 16px;
+        cursor: pointer;
+        min-height: unset;
+        line-height: 1;
+        transition: color 0.1s, background 0.1s;
+        align-self: stretch;
+      }
+
+      .pe-card-del:hover { color: var(--clay); background: #fff0eb; }
+
+      /* ── Add button ── */
+      .pe-add-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        width: 100%;
+        margin-top: 16px;
+        min-height: 52px;
+        border: 1.5px dashed var(--ink);
+        background: transparent;
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: border-color 0.15s, color 0.15s, background 0.15s;
+      }
+
+      .pe-add-btn:hover {
+        border-color: var(--clay);
+        border-style: solid;
+        color: var(--clay);
+        background: #fff8f5;
+      }
+
+      @media (max-width: 600px) {
+        .pe-header { padding: 12px 16px; gap: 12px; }
+        .pe-header h1 { font-size: 22px; }
+        .pe-pin-bar { padding: 10px 16px; }
+        .pe-body { padding: 20px 16px 60px; }
+        .pe-card-text { font-size: 18px; }
+      }
+    </style>
+  </head>
+  <body>
+
+    <header class="pe-header">
+      <h1>Chuck-Lash<span>.</span></h1>
+      <span class="pe-header-label">Prompt Editor</span>
+      <div class="pe-header-actions">
+        <span class="pe-count" id="promptCount"></span>
+        <span class="pe-status idle" id="saveStatus"></span>
+        <button class="pe-save-btn" id="saveBtn" onclick="save()">Save Prompts</button>
+      </div>
+    </header>
+
+    <div class="pe-pin-bar">
+      <span class="pe-pin-label">Host PIN</span>
+      <input class="pe-pin-input" id="pinInput" type="password" placeholder="chucklash" autocomplete="off">
+      <span class="pe-pin-note">Required to save · matches HOST_PIN env var</span>
+    </div>
+
+    <main class="pe-body">
+      <div class="pe-list" id="promptList"></div>
+      <button class="pe-add-btn" onclick="addPrompt()">+ Add Prompt</button>
+    </main>
+
+    <script>
+      const list = document.getElementById("promptList");
+      const saveBtn = document.getElementById("saveBtn");
+      const saveStatus = document.getElementById("saveStatus");
+      const promptCount = document.getElementById("promptCount");
+      const pinInput = document.getElementById("pinInput");
+
+      // Restore saved PIN
+      pinInput.value = localStorage.getItem("clHostPin") || "";
+      pinInput.addEventListener("change", () => {
+        localStorage.setItem("clHostPin", pinInput.value);
+      });
+
+      let prompts = [];
+
+      async function load() {
+        const res = await fetch("/api/prompts");
+        prompts = await res.json();
+        renderAll();
+      }
+
+      function renderAll() {
+        list.innerHTML = "";
+        prompts.forEach((p, i) => list.appendChild(makeCard(p, i)));
+        updateCount();
+      }
+
+      function makeCard(p, i) {
+        const card = document.createElement("div");
+        card.className = "pe-card";
+        card.dataset.index = i;
+
+        const hasUrl = String(p.videoUrl || "").trim().length > 0;
+
+        card.innerHTML = `
+          <div class="pe-card-num">${i + 1}</div>
+          <div class="pe-card-body">
+            <textarea class="pe-card-text" rows="3" placeholder="Write the prompt here…">${escHtml(p.text || "")}</textarea>
+            <div class="pe-card-video-row">
+              <span class="pe-card-video-tag">Video URL</span>
+              <input class="pe-card-video-input${hasUrl ? " has-url" : ""}" type="url"
+                placeholder="https://youtube.com/watch?v=… (optional)"
+                value="${escHtml(p.videoUrl || "")}">
+            </div>
+          </div>
+          <button class="pe-card-del" title="Delete prompt" onclick="deletePrompt(${i})">✕</button>
+        `;
+
+        const videoInput = card.querySelector(".pe-card-video-input");
+        videoInput.addEventListener("input", () => {
+          videoInput.classList.toggle("has-url", videoInput.value.trim().length > 0);
+        });
+
+        return card;
+      }
+
+      function collectPrompts() {
+        return Array.from(list.querySelectorAll(".pe-card")).map((card, i) => {
+          const orig = prompts[parseInt(card.dataset.index, 10)] || {};
+          return {
+            id: orig.id || `round-${i + 1}`,
+            text: card.querySelector(".pe-card-text").value.trim(),
+            videoUrl: card.querySelector(".pe-card-video-input").value.trim(),
+            mode: orig.mode || "all"
+          };
+        }).filter(p => p.text);
+      }
+
+      function addPrompt() {
+        const newPrompt = { id: `round-${Date.now()}`, text: "", videoUrl: "", mode: "all" };
+        prompts.push(newPrompt);
+        const card = makeCard(newPrompt, prompts.length - 1);
+        list.appendChild(card);
+        card.querySelector(".pe-card-text").focus();
+        updateCount();
+      }
+
+      function deletePrompt(i) {
+        const card = list.querySelector(`.pe-card[data-index="${i}"]`);
+        if (!card) return;
+        if (prompts.length <= 1) { showStatus("Need at least 1 prompt.", "err"); return; }
+        card.remove();
+        // Re-index remaining cards
+        Array.from(list.querySelectorAll(".pe-card")).forEach((c, idx) => {
+          c.dataset.index = idx;
+          c.querySelector(".pe-card-num").textContent = idx + 1;
+          c.querySelector(".pe-card-del").setAttribute("onclick", `deletePrompt(${idx})`);
+        });
+        prompts = collectPrompts();
+        updateCount();
+      }
+
+      async function save() {
+        const toSave = collectPrompts();
+        if (!toSave.length) { showStatus("No prompts to save.", "err"); return; }
+
+        const pin = pinInput.value || "chucklash";
+        saveBtn.disabled = true;
+        showStatus("Saving…", "ok");
+
+        try {
+          const res = await fetch("/api/host/save-prompts", {
+            method: "POST",
+            headers: { "content-type": "application/json", "x-host-pin": pin },
+            body: JSON.stringify({ prompts: toSave })
+          });
+          if (!res.ok) {
+            const body = await res.json();
+            throw new Error(body.error || `HTTP ${res.status}`);
+          }
+          prompts = toSave;
+          // Re-render to clean up indices
+          renderAll();
+          showStatus(`Saved ${toSave.length} prompt${toSave.length === 1 ? "" : "s"} ✓`, "ok");
+          localStorage.setItem("clHostPin", pin);
+        } catch (err) {
+          showStatus("Error: " + err.message, "err");
+        } finally {
+          saveBtn.disabled = false;
+        }
+      }
+
+      function showStatus(msg, type) {
+        saveStatus.textContent = msg;
+        saveStatus.className = "pe-status " + type;
+        if (type === "ok" && msg.includes("✓")) {
+          setTimeout(() => { saveStatus.className = "pe-status idle"; }, 3000);
+        }
+      }
+
+      function updateCount() {
+        const n = list.querySelectorAll(".pe-card").length;
+        promptCount.textContent = `${n} prompt${n === 1 ? "" : "s"}`;
+      }
+
+      function escHtml(s) {
+        return String(s).replace(/[&<>"']/g, c =>
+          ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":'&#039;' }[c]));
+      }
+
+      // Ctrl/Cmd+S to save
+      document.addEventListener("keydown", e => {
+        if ((e.ctrlKey || e.metaKey) && e.key === "s") {
+          e.preventDefault();
+          save();
+        }
+      });
+
+      load();
+    </script>
+  </body>
+</html>

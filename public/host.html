@@ -3,45 +3,607 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Chuck-Lash Host</title>
+    <title>Host — Chuck-Lash</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🥂</text></svg>">
+    <style>
+      :root {
+        --bg:      #0c0a08;
+        --surface: #131109;
+        --card:    #1c1814;
+        --border:  rgba(243,236,224,0.09);
+        --border2: rgba(243,236,224,0.16);
+        --text:    #f3ece0;
+        --muted:   rgba(243,236,224,0.42);
+        --dim:     rgba(243,236,224,0.18);
+        --clay:    #b54a1f;
+        --clay-lo: rgba(181,74,31,0.18);
+        --green:   #4a9b5f;
+        --amber:   #b58c1f;
+        --mono:    "JetBrains Mono", ui-monospace, monospace;
+        --serif:   "DM Serif Display", Georgia, serif;
+      }
+
+      *, *::before, *::after { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 13px;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ── Shell ── */
+      .hc-shell {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        min-height: 100vh;
+      }
+
+      /* ── Sidebar ── */
+      .hc-sidebar {
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        position: sticky;
+        top: 0;
+        overflow-y: auto;
+        border-right: 1px solid var(--border);
+        background: var(--bg);
+      }
+
+      .hc-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 22px;
+        border-bottom: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .hc-logo {
+        font-family: var(--serif);
+        font-size: 22px;
+        line-height: 1;
+        letter-spacing: -0.03em;
+        color: var(--text);
+      }
+
+      .hc-logo span { color: var(--clay); }
+
+      .hc-room-badge {
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--clay);
+        border: 1px solid rgba(181,74,31,0.35);
+        padding: 4px 10px;
+        white-space: nowrap;
+      }
+
+      /* Panel: scrollable sidebar content */
+      .hc-panel {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      /* ── Status card ── */
+      .hc-status {
+        border: 1px solid var(--border);
+        background: var(--card);
+        overflow: hidden;
+      }
+
+      .hc-status-phase {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 9px 14px;
+        border-bottom: 1px solid var(--border);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .hc-phase-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        flex-shrink: 0;
+        background: var(--dim);
+      }
+
+      .hc-phase-dot.active {
+        background: var(--clay);
+        animation: hcPulse 2s ease-in-out infinite;
+      }
+
+      .hc-phase-dot.good { background: var(--green); }
+      .hc-phase-dot.amber { background: var(--amber); }
+
+      @keyframes hcPulse {
+        0%, 100% { opacity: 1; }
+        50%       { opacity: 0.35; }
+      }
+
+      .hc-status-body {
+        padding: 14px 14px 4px;
+      }
+
+      .hc-status-heading {
+        font-family: var(--serif);
+        font-size: 26px;
+        line-height: 0.95;
+        letter-spacing: -0.02em;
+        margin: 0 0 8px;
+        color: var(--text);
+      }
+
+      .hc-status-note {
+        margin: 0 0 12px;
+        font-size: 11px;
+        color: var(--muted);
+        line-height: 1.5;
+      }
+
+      /* Progress bar (answering phase) */
+      .hc-progress {
+        padding: 0 14px 14px;
+      }
+
+      .hc-progress-label {
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 10px;
+        color: var(--muted);
+        letter-spacing: 1px;
+      }
+
+      .hc-progress-frac {
+        font-size: 20px;
+        font-weight: 800;
+        color: var(--text);
+        letter-spacing: -0.5px;
+        font-family: var(--serif);
+        font-style: italic;
+      }
+
+      .hc-progress-track {
+        height: 2px;
+        background: rgba(243,236,224,0.08);
+      }
+
+      .hc-progress-fill {
+        height: 100%;
+        background: var(--clay);
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+
+      /* ── Primary action ── */
+      .hc-primary-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        width: 100%;
+        min-height: 54px;
+        padding: 0 18px;
+        background: var(--clay);
+        border: none;
+        color: #f3ece0;
+        font-family: var(--mono);
+        font-size: 11px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: opacity 0.15s;
+        gap: 12px;
+      }
+
+      .hc-primary-btn:hover:not(:disabled) { opacity: 0.88; }
+
+      .hc-primary-btn:active:not(:disabled) {
+        opacity: 0.75;
+        transform: scale(0.99);
+      }
+
+      .hc-primary-btn:disabled {
+        opacity: 0.28;
+        cursor: not-allowed;
+      }
+
+      /* ── Secondary buttons ── */
+      .hc-secondary-row {
+        display: flex;
+        gap: 6px;
+        flex-wrap: wrap;
+      }
+
+      .hc-secondary-btn {
+        min-height: 34px;
+        padding: 0 12px;
+        background: transparent;
+        border: 1px solid var(--border2);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: border-color 0.1s, color 0.1s;
+        white-space: nowrap;
+      }
+
+      .hc-secondary-btn:hover:not(:disabled) {
+        border-color: rgba(243,236,224,0.32);
+        color: var(--text);
+      }
+
+      .hc-secondary-btn:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+
+      /* ── PIN row ── */
+      .hc-pin {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px 12px;
+        border: 1px solid var(--border);
+        background: var(--card);
+      }
+
+      .hc-pin-label {
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--dim);
+        flex-shrink: 0;
+      }
+
+      .hc-pin-input {
+        flex: 1;
+        height: 28px;
+        padding: 0 8px;
+        background: rgba(243,236,224,0.04);
+        border: 1px solid var(--border);
+        color: var(--muted);
+        font-family: var(--mono);
+        font-size: 12px;
+        outline: none;
+        min-width: 0;
+      }
+
+      .hc-pin-input:focus {
+        border-color: rgba(181,74,31,0.45);
+        color: var(--text);
+      }
+
+      /* ── Links ── */
+      .hc-links {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .hc-link {
+        display: block;
+        padding: 9px 0;
+        color: var(--dim);
+        text-decoration: none;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        border-bottom: 1px solid var(--border);
+        transition: color 0.1s;
+      }
+
+      .hc-link:last-child { border-bottom: 0; }
+      .hc-link:hover { color: var(--clay); }
+
+      /* ── Demo tools ── */
+      .hc-demo {
+        border: 1px solid var(--border);
+      }
+
+      .hc-demo summary {
+        padding: 10px 12px;
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--dim);
+        cursor: pointer;
+        list-style: none;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        user-select: none;
+        transition: color 0.1s;
+      }
+
+      .hc-demo summary:hover { color: var(--muted); }
+      .hc-demo summary::-webkit-details-marker { display: none; }
+
+      .hc-demo-chevron {
+        display: inline-block;
+        font-size: 8px;
+        transition: transform 0.2s;
+      }
+
+      details.hc-demo[open] .hc-demo-chevron { transform: rotate(90deg); }
+
+      .hc-demo-body {
+        padding: 0 12px 12px;
+        border-top: 1px solid var(--border);
+      }
+
+      .hc-demo-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+        margin-top: 10px;
+      }
+
+      .hc-demo-btn {
+        min-height: 34px;
+        padding: 0 10px;
+        background: rgba(243,236,224,0.03);
+        border: 1px solid var(--border);
+        color: var(--dim);
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: color 0.1s, border-color 0.1s;
+      }
+
+      .hc-demo-btn:hover {
+        color: var(--muted);
+        border-color: var(--border2);
+      }
+
+      .hc-auto-demo {
+        grid-column: 1 / -1;
+        background: var(--clay-lo);
+        border-color: rgba(181,74,31,0.28);
+        color: var(--clay);
+      }
+
+      .hc-auto-demo:hover {
+        background: rgba(181,74,31,0.26);
+        border-color: rgba(181,74,31,0.5);
+        color: #cc5a28;
+      }
+
+      .hc-auto-demo:disabled { opacity: 0.4; cursor: not-allowed; }
+
+      /* ── Main panel: players ── */
+      .hc-main {
+        background: var(--surface);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .hc-main-header {
+        position: sticky;
+        top: 0;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 16px 28px 12px;
+        background: var(--surface);
+        border-bottom: 1px solid var(--border);
+        z-index: 10;
+        flex-shrink: 0;
+      }
+
+      .hc-main-title {
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .hc-player-count {
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        color: var(--dim);
+      }
+
+      /* Player rows */
+      .hc-player-list {
+        flex: 1;
+      }
+
+      .hc-player-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 11px 28px;
+        border-bottom: 1px solid var(--border);
+        transition: background 0.1s;
+      }
+
+      .hc-player-row:hover { background: rgba(243,236,224,0.02); }
+
+      .hc-player-name {
+        flex: 1;
+        font-family: var(--serif);
+        font-size: 20px;
+        font-style: italic;
+        line-height: 1;
+        color: var(--text);
+        min-width: 0;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+
+      .hc-bachelor-tag {
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1.5px;
+        text-transform: uppercase;
+        color: var(--clay);
+        border: 1px solid rgba(181,74,31,0.4);
+        padding: 3px 8px;
+        white-space: nowrap;
+        flex-shrink: 0;
+      }
+
+      .hc-player-actions {
+        display: flex;
+        gap: 5px;
+        flex-shrink: 0;
+      }
+
+      .hc-player-btn {
+        height: 28px;
+        padding: 0 10px;
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--dim);
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 1px;
+        text-transform: uppercase;
+        cursor: pointer;
+        transition: color 0.1s, border-color 0.1s, background 0.1s;
+        white-space: nowrap;
+      }
+
+      .hc-player-btn:hover {
+        color: var(--text);
+        border-color: var(--border2);
+      }
+
+      .hc-player-btn.is-bachelor {
+        color: var(--clay);
+        border-color: rgba(181,74,31,0.4);
+        background: var(--clay-lo);
+      }
+
+      .hc-player-btn.remove:hover {
+        color: #e05252;
+        border-color: rgba(224,82,82,0.35);
+        background: rgba(224,82,82,0.08);
+      }
+
+      .hc-empty {
+        padding: 36px 28px;
+        color: var(--dim);
+        font-size: 11px;
+        letter-spacing: 1px;
+        line-height: 1.6;
+      }
+
+      /* Error / disconnected */
+      .hc-error {
+        padding: 14px;
+        border: 1px solid rgba(224,82,82,0.3);
+        background: rgba(224,82,82,0.06);
+        color: #e07272;
+        font-size: 11px;
+        line-height: 1.5;
+      }
+
+      /* Responsive */
+      @media (max-width: 720px) {
+        .hc-shell { grid-template-columns: 1fr; }
+        .hc-sidebar { position: static; height: auto; }
+        .hc-main { min-height: 50vh; }
+      }
+    </style>
   </head>
-  <body class="host-body">
-    <main class="host-console">
-      <section class="controls">
-        <p class="eyebrow">Run of show</p>
-        <h2>Host Controls</h2>
-        <label>
-          Host PIN
-          <input id="pinInput" type="password" value="chucklash">
-        </label>
-        <div id="hostStage" class="host-status"></div>
-        <div id="flowControls" class="control-grid"></div>
-        <a class="download-link" href="/screen.html" target="_blank">Open main game screen</a>
-      </section>
+  <body>
+    <div class="hc-shell">
 
-      <section class="controls">
-        <p class="eyebrow">Preview</p>
-        <h3>Demo Walkthrough</h3>
-        <p class="small-note">Use these to preview the game without phones. Keep the main game screen open beside it or on the TV.</p>
-        <div id="demoControls" class="demo-grid">
-          <button type="button" data-demo-action="demo-lobby">Load Demo Lobby</button>
-          <button type="button" data-demo-action="demo-answers">Fill Demo Answers</button>
-          <button type="button" data-demo-action="demo-votes">Cast Demo Votes</button>
-          <button type="button" id="autoDemoButton" class="primary">Auto-Run Round</button>
+      <!-- ── Sidebar: controls ── -->
+      <aside class="hc-sidebar">
+        <header class="hc-header">
+          <span class="hc-logo">Chuck-Lash<span>.</span></span>
+          <span class="hc-room-badge" id="hcRoomBadge">Host</span>
+        </header>
+
+        <div class="hc-panel">
+
+          <!-- Status card -->
+          <div id="hostStage"></div>
+
+          <!-- Flow controls -->
+          <div>
+            <div id="flowControlsPrimary"></div>
+            <div id="flowControlsSecondary" class="hc-secondary-row" style="margin-top:8px"></div>
+          </div>
+
+          <!-- PIN -->
+          <div class="hc-pin">
+            <span class="hc-pin-label">PIN</span>
+            <input id="pinInput" type="password" class="hc-pin-input" value="chucklash" autocomplete="off" spellcheck="false">
+          </div>
+
+          <!-- Links -->
+          <nav class="hc-links">
+            <a class="hc-link" href="/screen" target="_blank">↗ Open TV Screen</a>
+            <a class="hc-link" href="/prompts" target="_blank">↗ Edit Prompts</a>
+            <a class="hc-link" href="/api/results" target="_blank">↗ Download Results JSON</a>
+          </nav>
+
+          <!-- Demo tools -->
+          <details class="hc-demo">
+            <summary>
+              <span class="hc-demo-chevron">▶</span>
+              Demo Tools
+            </summary>
+            <div class="hc-demo-body">
+              <div class="hc-demo-grid">
+                <button class="hc-demo-btn" data-demo-action="demo-lobby">Load Demo Lobby</button>
+                <button class="hc-demo-btn" data-demo-action="demo-answers">Fill Demo Answers</button>
+                <button class="hc-demo-btn" data-demo-action="demo-votes">Cast Demo Votes</button>
+                <button class="hc-demo-btn hc-auto-demo" id="autoDemoButton">Auto-Run Round</button>
+              </div>
+            </div>
+          </details>
+
         </div>
-      </section>
+      </aside>
 
-      <section class="controls">
-        <p class="eyebrow">In the room</p>
-        <h3>Players</h3>
-        <div id="playerAdmin" class="player-admin"></div>
-        <a class="download-link" href="/api/results" target="_blank">Open saved results JSON</a>
-      </section>
-    </main>
+      <!-- ── Main: players ── -->
+      <main class="hc-main">
+        <div class="hc-main-header">
+          <span class="hc-main-title">Players</span>
+          <span class="hc-player-count" id="hcPlayerCount"></span>
+        </div>
+        <div id="playerAdmin" class="hc-player-list"></div>
+      </main>
+
+    </div>
     <script src="/host.js"></script>
   </body>
 </html>

@@ -299,6 +299,10 @@ const server = http.createServer(async (req, res) => {
       return sendJson(res, 200, publicState(url.searchParams.get("playerId")));
     }
 
+    if (req.method === "GET" && url.pathname === "/api/prompts") {
+      return sendJson(res, 200, state.prompts);
+    }
+
     if (req.method === "GET" && url.pathname === "/api/results") {
       return sendJson(res, 200, fs.existsSync(RESULTS_FILE) ? JSON.parse(fs.readFileSync(RESULTS_FILE, "utf8")) : {});
     }
@@ -370,6 +374,18 @@ const server = http.createServer(async (req, res) => {
 
       if (action === "reload-prompts") {
         state.prompts = loadPrompts();
+      }
+
+      if (action === "save-prompts") {
+        const prompts = (body.prompts || []).map((p, i) => ({
+          id: String(p.id || `round-${i + 1}`),
+          text: String(p.text || "").trim(),
+          videoUrl: String(p.videoUrl || "").trim(),
+          mode: p.mode === "duel" ? "duel" : "all"
+        })).filter(p => p.text);
+        fs.mkdirSync(DATA_DIR, { recursive: true });
+        fs.writeFileSync(PROMPTS_FILE, JSON.stringify(prompts, null, 2));
+        state.prompts = prompts;
       }
 
       if (action === "demo-lobby") {

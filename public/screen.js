@@ -1,9 +1,6 @@
 const els = {
-  screenStage:      document.getElementById("screenStage"),
-  screenMastRight:  document.getElementById("screenMastRight"),
-  screenFooterMid:  document.getElementById("screenFooterMid"),
-  screenFooterRight:document.getElementById("screenFooterRight"),
-  screenFooterRoom: document.getElementById("screenFooterRoom")
+  screenStage:     document.getElementById("screenStage"),
+  screenMastRight: document.getElementById("screenMastRight")
 };
 
 const missingEls = Object.entries(els)
@@ -47,17 +44,10 @@ async function refresh() {
 function render() {
   if (!state) return;
 
-  if (els.screenFooterRoom) els.screenFooterRoom.textContent = state.roomCode;
   document.body.dataset.phase = state.phase;
 
-  const ch = state.currentPromptIndex >= 0 ? state.currentPromptIndex + 1 : 0;
-  const chStr = String(ch).padStart(2, "0");
-
   // Right masthead — dynamic per phase
-  els.screenMastRight.innerHTML = mastRightHtml(state.phase, ch);
-
-  els.screenFooterMid.textContent   = footerText(state.phase);
-  els.screenFooterRight.textContent = `chapter ${chStr} / ${state.totalPrompts}`;
+  els.screenMastRight.innerHTML = mastRightHtml(state.phase);
 
   if (state.phase === "lobby")                                   { stopTimer(); renderLobby();       return; }
   if (!state.prompt || state.phase === "finished")               { stopTimer(); renderFinished();    return; }
@@ -70,8 +60,7 @@ function render() {
 
 // ─── Masthead right content (dynamic per phase) ───────────────────────────────
 
-function mastRightHtml(phase, chapter) {
-  const chStr = String(chapter).padStart(2, "0");
+function mastRightHtml(phase) {
   switch (phase) {
     case "lobby":
       return `<p class="eyebrow">Tonight, in honor of</p><div class="mast-honoree">Charles "Chuck" Rollins</div>`;
@@ -79,12 +68,6 @@ function mastRightHtml(phase, chapter) {
       return `<p class="eyebrow">Time remaining</p><div id="screenTimer" class="screen-timer mast-timer">3:00</div>`;
     case "voting":
       return `<p class="eyebrow">Vote on your phone</p><div id="screenTimer" class="screen-timer mast-timer">0:30</div>`;
-    case "results":
-      return `<p class="eyebrow">Ch. ${chStr} · The verdict</p><div class="mast-subtitle">The votes are in</div>`;
-    case "leaderboard":
-      return `<p class="eyebrow">After Chapter ${chStr}</p><div class="mast-subtitle">The order, as it stands</div>`;
-    case "finished":
-      return `<p class="eyebrow">Final Edition</p><div class="mast-subtitle">Game Over</div>`;
     default:
       return "";
   }
@@ -136,28 +119,27 @@ function renderLobby() {
     <div class="screen-lobby">
       <section>
         <h2>An Evening<br>with <em>Chuck.</em></h2>
-        <p class="screen-lede">A parlor game in questionable chapters, played in honor of one Charles Rollins. Be clever, be brief, be merciful. Or don't.</p>
         <ol class="screen-rules">
           <li><span>1.</span> Each chapter, you'll get a prompt. Write something funnier than your friends.</li>
           <li><span>2.</span> Vote for the best answer. Yours doesn't count, sorry.</li>
           <li><span>3.</span> Chuck's pick is worth double. Aim there.</li>
         </ol>
-        <div class="join-block">
+      </section>
+      <section class="lobby-right">
+        <div class="section-rule">
+          <p class="eyebrow">In the room — ${state.players.length} joined</p>
+          <span>names appear as they join ↓</span>
+        </div>
+        <div class="screen-player-list">${state.players.map((p, i) => `
+          <span style="--tilt:${[-1.2, 0.8, -0.4, 1.2, -0.8, 0.4][i % 6]}deg">${escapeHtml(p.name)}${p.isBachelor ? " ★" : ""}</span>
+        `).join("")}<span class="waiting-chip">waiting...</span></div>
+        <div class="join-block join-block--bottom">
           <div class="qr-box" id="qrCanvas"></div>
           <div>
             <p class="eyebrow">Join from your phone</p>
             <div class="join-url">chuck-lash.party</div>
           </div>
         </div>
-      </section>
-      <section>
-        <div class="section-rule">
-          <p class="eyebrow">In the room — ${state.players.length} joined</p>
-          <span>names appear as they join ↓</span>
-        </div>
-        <div class="screen-player-list">${state.players.map((p, i) => `
-          <span style="--tilt:${[-1.2, 0.8, -0.4, 1.2, -0.8, 0.4][i % 6]}deg">${escapeHtml(p.name)}${p.isBachelor ? " *" : ""}</span>
-        `).join("")}<span class="waiting-chip">waiting...</span></div>
       </section>
     </div>
   `;
@@ -166,7 +148,7 @@ function renderLobby() {
   if (qrEl && !qrEl.hasChildNodes()) {
     new QRCode(qrEl, {
       text: window.location.origin,
-      width: 196, height: 196,
+      width: 136, height: 136,
       colorDark: "#1a1612", colorLight: "#fffaf0",
       correctLevel: QRCode.CorrectLevel.M
     });
@@ -216,10 +198,6 @@ function renderPrompt() {
   els.screenStage.innerHTML = `
     <div class="video-state">
       <div class="video-frame">${videoMarkup(state.prompt.videoUrl)}</div>
-      <div class="video-subtitle">
-        <p class="video-prompt-label">— The Prompt —</p>
-        <div>${wordsMarkup(state.prompt.text)}</div>
-      </div>
     </div>
   `;
 }
@@ -227,11 +205,7 @@ function renderPrompt() {
 function renderTextPrompt() {
   els.screenStage.innerHTML = `
     <div class="text-prompt-state">
-      <div>
-        <p class="eyebrow">The Prompt</p>
-        <h2>${escapeHtml(state.prompt.text)}</h2>
-      </div>
-      <p class="text-prompt-note">Answers are already in. Read the room, then reveal the damage.</p>
+      <h2>${escapeHtml(state.prompt.text)}</h2>
     </div>
   `;
 }
@@ -259,7 +233,7 @@ function renderAnswersPhase() {
           }
         }
       }
-      answersReveal.timer = setTimeout(revealNext, 1500);
+      answersReveal.timer = setTimeout(revealNext, 800);
     } else {
       answersReveal.count = Math.min(4, state.answers.length);
     }
@@ -280,17 +254,8 @@ function drawAnswersGrid() {
   const answers    = state.answers.slice(0, 4); // always cap at 4
   const count      = answersReveal.count;
 
-  const headingText = isVoting
-    ? `voting open · ${totalVotes()} cast`
-    : count === 0 ? "reading answers"
-    : count < answers.length ? `${count} of ${answers.length} revealed`
-    : `${answers.length} answer${answers.length === 1 ? "" : "s"}`;
-
   els.screenStage.innerHTML = `
     <div class="screen-round">
-      <div class="round-heading">
-        <p class="eyebrow">${headingText}</p>
-      </div>
       <div class="screen-prompt">${escapeHtml(state.prompt.text)}</div>
       <div class="answers-grid screen-answers">
         ${Array.from({ length: 4 }, (_, i) => {
@@ -301,7 +266,7 @@ function drawAnswersGrid() {
           // Voting: no dots — just the clean card
           return `
             <div class="card-wrap">
-              <div class="answer-card${isVoting ? "" : " answer-enter"}">
+              <div class="answer-card${isVoting ? "" : (i === count - 1 ? " answer-enter" : "")}">
                 <p class="card-text">"${escapeHtml(answer.text)}"</p>
               </div>
             </div>`;
@@ -333,9 +298,9 @@ function renderResults() {
   // Wave animation: all cards' nth vote appear together
   // Wave vi fires at STAGE2_START + vi * WAVE_GAP
   // Cards stagger by CARD_STAGGER within the same wave (nearly simultaneous)
-  const STAGE2_START = 1200;
-  const WAVE_GAP     = 500;
-  const CARD_STAGGER = 60;
+  const STAGE2_START = 200;
+  const WAVE_GAP     = 80;
+  const CARD_STAGGER = 20;
 
   const hasCrown = bachelorPlayerId !== null;
   // Crown fires after all regular vote waves
@@ -345,7 +310,6 @@ function renderResults() {
 
   els.screenStage.innerHTML = `
     <div class="screen-round">
-      <p class="eyebrow">The votes are in</p>
       <div class="screen-prompt">${escapeHtml(state.prompt.text)}</div>
       <div class="results-grid screen-answers">
         ${answers.map((answer, ai) => {
@@ -387,16 +351,14 @@ function renderResults() {
 // ─── Leaderboard / Finished ───────────────────────────────────────────────────
 
 function renderLeaderboard() {
-  const ch = state.currentPromptIndex >= 0 ? state.currentPromptIndex + 1 : 0;
-  els.screenStage.innerHTML = leaderboardMarkup(ch);
+  els.screenStage.innerHTML = leaderboardMarkup();
 }
 
 function renderFinished() {
-  const ch = state.currentPromptIndex >= 0 ? state.currentPromptIndex + 1 : state.totalPrompts;
-  els.screenStage.innerHTML = leaderboardMarkup(ch);
+  els.screenStage.innerHTML = leaderboardMarkup();
 }
 
-function leaderboardMarkup(chapter) {
+function leaderboardMarkup() {
   const players = [...state.players].sort((a, b) => (state.scores[b.id] || 0) - (state.scores[a.id] || 0));
   const deltas  = getLastRoundDeltas();
   const top     = players.slice(0, 3);
@@ -496,12 +458,6 @@ function wordsMarkup(text) {
   ).join(" ");
 }
 
-function footerText(phase) {
-  return { lobby:"the lobby — waiting for the rest", answering:"collecting answers",
-           prompt: state?.prompt && promptDisplayMode(state.prompt) === "video" ? "video prompt" : "prompt reveal",
-           answers:"anonymous answers revealed", voting:"voting open",
-           results:"results posted", leaderboard:"current standings", finished:"final scores" }[phase] || "live";
-}
 
 function escapeHtml(value) {
   return String(value).replace(/[&<>"']/g, c =>

@@ -1,0 +1,528 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chuck-Lash — TV Screen Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+      .preview-bg {
+        padding: 48px 32px 80px;
+        background: #b0a898;
+        min-height: 100vh;
+      }
+      .preview-masthead {
+        max-width: 1480px;
+        margin: 0 auto 48px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 24px;
+        border-bottom: 1.5px solid var(--ink);
+        padding-bottom: 16px;
+      }
+      .preview-masthead h1 {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 44px;
+        line-height: 0.9;
+        letter-spacing: -0.03em;
+      }
+      .preview-masthead p {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+      .preview-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 36px;
+        max-width: 1480px;
+        margin: 0 auto;
+        align-items: start;
+      }
+      .preview-item { flex-shrink: 0; }
+      .preview-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: rgba(26,22,18,0.55);
+        margin: 0 0 10px;
+      }
+
+      /* ── TV frame: 1120×630 inner → 560×315 outer ── */
+      .tv-frame {
+        width: 560px;
+        height: 315px;
+        overflow: hidden;
+        position: relative;
+        border: 2px solid var(--ink);
+        box-shadow: 8px 8px 0 rgba(26,22,18,0.18);
+        background: var(--paper);
+      }
+      .tv-inner {
+        position: absolute;
+        top: 0; left: 0;
+        width: 1120px;
+        height: 630px;
+        transform: scale(0.5);
+        transform-origin: top left;
+        pointer-events: none;
+        background: var(--paper);
+        color: var(--ink);
+      }
+      /* Override viewport-relative sizing so preview renders like real TV */
+      .tv-inner .screen-only {
+        width: 1120px !important;
+        height: 630px !important;
+        max-width: 1120px !important;
+        max-height: 630px !important;
+        min-height: unset !important;
+      }
+      /* Freeze animations so preview is static */
+      .tv-inner * {
+        animation-play-state: paused !important;
+        animation-delay: 0s !important;
+        opacity: 1 !important;
+      }
+    </style>
+  </head>
+  <body class="preview-bg">
+
+    <div class="preview-masthead">
+      <h1>TV Screens</h1>
+      <p>Chuck-Lash · 9 states · 15 players</p>
+    </div>
+
+    <div class="preview-grid">
+
+      <!-- 1. Lobby -->
+      <div class="preview-item">
+        <p class="preview-label">1 · Lobby</p>
+        <div class="tv-frame">
+          <div class="tv-inner">
+            <main class="screen-only">
+              <div class="masthead">
+                <div><h1>Chuck-Lash<span>.</span></h1></div>
+                <div class="mast-meta">
+                  <p class="eyebrow">Tonight, in honor of</p>
+                  <div class="mast-honoree">Charles "Chuck" Rollins</div>
+                </div>
+              </div>
+              <div class="stage">
+                <div class="screen-lobby">
+                  <section>
+                    <h2>An Evening<br>with <em>Chuck.</em></h2>
+                    <ol class="screen-rules">
+                      <li><span>1.</span> Each chapter, you'll get a prompt. Write something funnier than your friends.</li>
+                      <li><span>2.</span> Vote for the best answer. Yours doesn't count, sorry.</li>
+                      <li><span>3.</span> Chuck's pick is worth double. Aim there.</li>
+                    </ol>
+                  </section>
+                  <section class="lobby-right">
+                    <div class="section-rule">
+                      <p class="eyebrow">In the room — 15 joined</p>
+                      <span>names appear as they join ↓</span>
+                    </div>
+                    <div class="screen-player-list">
+                      <span style="--tilt:-1.2deg">Mike D</span>
+                      <span style="--tilt:0.8deg">Sarah K</span>
+                      <span style="--tilt:-0.4deg">Dave M</span>
+                      <span style="--tilt:1.2deg">Jess P</span>
+                      <span style="--tilt:-0.8deg">Tom R</span>
+                      <span style="--tilt:0.4deg">Chuck ★</span>
+                      <span style="--tilt:-1.2deg">Ryan B</span>
+                      <span style="--tilt:0.8deg">Ali C</span>
+                      <span style="--tilt:-0.4deg">Jake W</span>
+                      <span style="--tilt:1.2deg">Sam L</span>
+                      <span style="--tilt:-0.8deg">Kate F</span>
+                      <span style="--tilt:0.4deg">Chris H</span>
+                      <span style="--tilt:-1.2deg">Mara J</span>
+                      <span style="--tilt:0.8deg">Ben O</span>
+                      <span style="--tilt:-0.4deg">Zoe N</span>
+                      <span class="waiting-chip">waiting...</span>
+                    </div>
+                    <div class="join-block join-block--bottom">
+                      <div class="qr-box" style="color:var(--muted);font-size:11px;letter-spacing:2px;font-family:var(--mono);">QR</div>
+                      <div>
+                        <p class="eyebrow">Join from your phone</p>
+                        <div class="join-url">chuck-lash.party</div>
+                      </div>
+                    </div>
+                  </section>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- 2. Answering -->
+      <div class="preview-item">
+        <p class="preview-label">2 · Answering</p>
+        <div class="tv-frame">
+          <div class="tv-inner">
+            <main class="screen-only">
+              <div class="masthead">
+                <div><h1>Chuck-Lash<span>.</span></h1></div>
+                <div class="mast-meta">
+                  <p class="eyebrow">Time remaining</p>
+                  <div class="screen-timer mast-timer">2:34</div>
+                </div>
+              </div>
+              <div class="stage">
+                <div class="screen-submit">
+                  <section>
+                    <div class="stamp-row">
+                      <span class="stamp">Heads Down</span>
+                      <span class="stamp alt">Phones out</span>
+                    </div>
+                    <h2>Look at<br>your<br><em>phone.</em></h2>
+                    <p class="screen-lede">The prompt is private for now. Write something clever, short, and just risky enough.</p>
+                  </section>
+                  <section class="submit-counter">
+                    <p class="eyebrow">Answers In</p>
+                    <div class="answer-count">
+                      <span class="answer-count-number">8</span>
+                      <span class="answer-count-slash">/</span>
+                      <span class="answer-count-number">15</span>
+                    </div>
+                    <p class="answer-count-caption">players have submitted</p>
+                    <div class="dot-grid">
+                      <span class="filled"></span><span class="filled"></span><span class="filled"></span>
+                      <span class="filled"></span><span class="filled"></span><span class="filled"></span>
+                      <span class="filled"></span><span class="filled"></span>
+                      <span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                    <div class="screen-progress"><span style="width:53%"></span></div>
+                  </section>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3a. Prompt reveal (text, dark) -->
+      <div class="preview-item">
+        <p class="preview-label">3a · Prompt reveal (text)</p>
+        <div class="tv-frame" style="background:var(--ink);">
+          <div class="tv-inner" style="background:var(--ink);">
+            <main class="screen-only" style="background:var(--ink);color:var(--paper);">
+              <div class="masthead" style="color:rgba(243,236,224,0.6);">
+                <div><h1>Chuck-Lash<span style="color:var(--clay);">.</span></h1></div>
+                <div class="mast-meta"></div>
+              </div>
+              <div class="stage">
+                <div class="text-prompt-state">
+                  <h2>If Chuck had a signature cologne, what would it be called?</h2>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3b. Prompt reveal (video, dark) -->
+      <div class="preview-item">
+        <p class="preview-label">3b · Prompt reveal (video)</p>
+        <div class="tv-frame" style="background:var(--ink);">
+          <div class="tv-inner" style="background:var(--ink);">
+            <main class="screen-only" style="background:var(--ink);color:var(--paper);">
+              <div class="masthead" style="color:rgba(243,236,224,0.6);">
+                <div><h1>Chuck-Lash<span style="color:var(--clay);">.</span></h1></div>
+                <div class="mast-meta"></div>
+              </div>
+              <div class="stage" style="padding:0;">
+                <div class="video-state">
+                  <div class="video-frame" style="display:grid;place-items:center;color:rgba(243,236,224,0.2);font-family:var(--mono);font-size:22px;letter-spacing:4px;">▶ VIDEO</div>
+                  <div class="video-subtitle">
+                    <div>If Chuck had a signature cologne, what would it be called?</div>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Answers (revealing — 2 of 4 shown) -->
+      <div class="preview-item">
+        <p class="preview-label">4 · Answers (revealing)</p>
+        <div class="tv-frame">
+          <div class="tv-inner">
+            <main class="screen-only">
+              <div class="masthead">
+                <div><h1>Chuck-Lash<span>.</span></h1></div>
+                <div class="mast-meta"></div>
+              </div>
+              <div class="stage">
+                <div class="screen-round">
+                  <div class="screen-prompt">If Chuck had a signature cologne, what would it be called?</div>
+                  <div class="answers-grid screen-answers">
+                    <div class="card-wrap">
+                      <div class="answer-card">
+                        <p class="card-text">"Old Spice mixed with regret and motor oil"</p>
+                      </div>
+                    </div>
+                    <div class="card-wrap">
+                      <div class="answer-card">
+                        <p class="card-text">"Pure confidence, fresh-cut grass, 1% danger"</p>
+                      </div>
+                    </div>
+                    <div class="answer-placeholder"></div>
+                    <div class="answer-placeholder"></div>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Voting (all 4 shown) -->
+      <div class="preview-item">
+        <p class="preview-label">5 · Voting</p>
+        <div class="tv-frame">
+          <div class="tv-inner">
+            <main class="screen-only">
+              <div class="masthead">
+                <div><h1>Chuck-Lash<span>.</span></h1></div>
+                <div class="mast-meta">
+                  <p class="eyebrow">Vote on your phone</p>
+                  <div class="screen-timer mast-timer">0:24</div>
+                </div>
+              </div>
+              <div class="stage">
+                <div class="screen-round">
+                  <div class="screen-prompt">If Chuck had a signature cologne, what would it be called?</div>
+                  <div class="answers-grid screen-answers">
+                    <div class="card-wrap">
+                      <div class="answer-card">
+                        <p class="card-text">"Old Spice mixed with regret and motor oil"</p>
+                      </div>
+                    </div>
+                    <div class="card-wrap">
+                      <div class="answer-card">
+                        <p class="card-text">"Pure confidence, fresh-cut grass, 1% danger"</p>
+                      </div>
+                    </div>
+                    <div class="card-wrap">
+                      <div class="answer-card">
+                        <p class="card-text">"Wednesday morning, a gas station, and ambition"</p>
+                      </div>
+                    </div>
+                    <div class="card-wrap">
+                      <div class="answer-card">
+                        <p class="card-text">"Quiet Power. Notes of sawdust and optimism."</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Results (15 players = 15 total votes) -->
+      <div class="preview-item">
+        <p class="preview-label">6 · Results</p>
+        <div class="tv-frame">
+          <div class="tv-inner">
+            <main class="screen-only">
+              <div class="masthead">
+                <div><h1>Chuck-Lash<span>.</span></h1></div>
+                <div class="mast-meta"></div>
+              </div>
+              <div class="stage">
+                <div class="screen-round">
+                  <div class="screen-prompt">If Chuck had a signature cologne, what would it be called?</div>
+                  <div class="results-grid screen-answers">
+                    <!-- Mike D: 5 votes -->
+                    <div class="card-wrap">
+                      <div class="card-author">Mike D</div>
+                      <div class="answer-card">
+                        <p class="card-text">"Old Spice mixed with regret and motor oil"</p>
+                        <div class="card-dots">
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Sarah K: 6 votes + bachelor pick (winner) -->
+                    <div class="card-wrap">
+                      <div class="card-author">Sarah K</div>
+                      <div class="answer-card answer-winner" style="--winner-delay:0ms">
+                        <div class="bachelor-badge">♛ Bachelor's pick</div>
+                        <p class="card-text">"Pure confidence, fresh-cut grass, 1% danger"</p>
+                        <div class="card-dots">
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot crown-dot">★</span>
+                          <span class="result-dot crown-dot">★</span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Dave M: 3 votes -->
+                    <div class="card-wrap">
+                      <div class="card-author">Dave M</div>
+                      <div class="answer-card">
+                        <p class="card-text">"Wednesday morning, a gas station, and ambition"</p>
+                        <div class="card-dots">
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                          <span class="result-dot"></span>
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Jess P: 1 vote -->
+                    <div class="card-wrap">
+                      <div class="card-author">Jess P</div>
+                      <div class="answer-card">
+                        <p class="card-text">"Quiet Power. Notes of sawdust and optimism."</p>
+                        <div class="card-dots">
+                          <span class="result-dot"></span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Leaderboard (15 players) -->
+      <div class="preview-item">
+        <p class="preview-label">7 · Leaderboard</p>
+        <div class="tv-frame">
+          <div class="tv-inner">
+            <main class="screen-only">
+              <div class="masthead">
+                <div><h1>Chuck-Lash<span>.</span></h1></div>
+                <div class="mast-meta"></div>
+              </div>
+              <div class="stage">
+                <div class="lb-two-col">
+                  <div class="lb-left">
+                    <div class="lb-section-label">The Front Runners</div>
+                    <div class="lb-row lb-row--top">
+                      <span class="lb-rank lb-rank--big">1</span>
+                      <div class="lb-name-group">
+                        <span class="lb-name">Sarah K</span>
+                        <span class="lb-delta">+8 this chapter</span>
+                      </div>
+                      <span class="lb-score">8</span>
+                    </div>
+                    <div class="lb-row lb-row--top">
+                      <span class="lb-rank lb-rank--big">2</span>
+                      <div class="lb-name-group">
+                        <span class="lb-name">Mike D</span>
+                        <span class="lb-delta">+5 this chapter</span>
+                      </div>
+                      <span class="lb-score">5</span>
+                    </div>
+                    <div class="lb-row lb-row--top">
+                      <span class="lb-rank lb-rank--big">3</span>
+                      <div class="lb-name-group">
+                        <span class="lb-name">Dave M</span>
+                        <span class="lb-delta">+3 this chapter</span>
+                      </div>
+                      <span class="lb-score">3</span>
+                    </div>
+                  </div>
+                  <div class="lb-right">
+                    <div class="lb-section-label">The Pack</div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">4.</span><span class="lb-name">Ryan B</span><span class="lb-score">1</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">5.</span><span class="lb-name">Jess P</span><span class="lb-score">1</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">6.</span><span class="lb-name">Tom R</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">7.</span><span class="lb-name">Ali C</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">8.</span><span class="lb-name">Jake W</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">9.</span><span class="lb-name">Sam L</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">10.</span><span class="lb-name">Kate F</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">11.</span><span class="lb-name">Chris H</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">12.</span><span class="lb-name">Mara J</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">13.</span><span class="lb-name">Ben O</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">14.</span><span class="lb-name">Zoe N</span><span class="lb-score">0</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">15.</span><span class="lb-name">Chuck ★</span><span class="lb-score">0</span></div>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Game Over (15 players, final scores) -->
+      <div class="preview-item">
+        <p class="preview-label">8 · Game Over</p>
+        <div class="tv-frame">
+          <div class="tv-inner">
+            <main class="screen-only">
+              <div class="masthead">
+                <div><h1>Chuck-Lash<span>.</span></h1></div>
+                <div class="mast-meta"></div>
+              </div>
+              <div class="stage">
+                <div class="lb-two-col">
+                  <div class="lb-left">
+                    <div class="lb-section-label">The Front Runners</div>
+                    <div class="lb-row lb-row--top">
+                      <span class="lb-rank lb-rank--big">1</span>
+                      <div class="lb-name-group"><span class="lb-name">Sarah K</span></div>
+                      <span class="lb-score">58</span>
+                    </div>
+                    <div class="lb-row lb-row--top">
+                      <span class="lb-rank lb-rank--big">2</span>
+                      <div class="lb-name-group"><span class="lb-name">Mike D</span></div>
+                      <span class="lb-score">42</span>
+                    </div>
+                    <div class="lb-row lb-row--top">
+                      <span class="lb-rank lb-rank--big">3</span>
+                      <div class="lb-name-group"><span class="lb-name">Dave M</span></div>
+                      <span class="lb-score">31</span>
+                    </div>
+                  </div>
+                  <div class="lb-right">
+                    <div class="lb-section-label">The Pack</div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">4.</span><span class="lb-name">Ryan B</span><span class="lb-score">28</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">5.</span><span class="lb-name">Jess P</span><span class="lb-score">24</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">6.</span><span class="lb-name">Tom R</span><span class="lb-score">19</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">7.</span><span class="lb-name">Ali C</span><span class="lb-score">15</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">8.</span><span class="lb-name">Jake W</span><span class="lb-score">12</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">9.</span><span class="lb-name">Sam L</span><span class="lb-score">10</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">10.</span><span class="lb-name">Kate F</span><span class="lb-score">8</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">11.</span><span class="lb-name">Chris H</span><span class="lb-score">6</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">12.</span><span class="lb-name">Mara J</span><span class="lb-score">4</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">13.</span><span class="lb-name">Ben O</span><span class="lb-score">2</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">14.</span><span class="lb-name">Zoe N</span><span class="lb-score">1</span></div>
+                    <div class="lb-row lb-row--pack"><span class="lb-rank">15.</span><span class="lb-name">Chuck ★</span><span class="lb-score">0</span></div>
+                  </div>
+                </div>
+              </div>
+            </main>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>

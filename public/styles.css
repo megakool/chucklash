@@ -564,23 +564,28 @@ h3 {
 }
 
 
-/* TV screen */
-.screen-body {
-  overflow: hidden;
-  background: var(--paper);
-  color: var(--ink);
-}
+/* ===== TV SCREEN ===== */
 
-.screen-body[data-phase="prompt"] {
-  background: var(--ink);
-  color: var(--paper);
+.screen-body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+  color: var(--ink);
 }
 
 .screen-only {
   display: flex;
   flex-direction: column;
-  min-height: 100vh;
-  padding: 28px 48px 14px;
+  width: 100vw;
+  height: 100vh;
+  /* On a 16:9 screen this fills perfectly.
+     On any other ratio, clamp to 16:9 and letterbox with black bars. */
+  max-width: calc(100vh * (16 / 9));
+  max-height: calc(100vw * (9 / 16));
+  overflow: hidden;
+  padding: 0 52px;
+  background: var(--paper);
 }
 
 .masthead {
@@ -588,14 +593,15 @@ h3 {
   align-items: flex-end;
   justify-content: space-between;
   gap: 28px;
-  min-height: 84px;
+  min-height: 72px;
   border-bottom: 2px solid currentColor;
-  padding-bottom: 10px;
+  padding: 14px 0 12px;
+  flex-shrink: 0;
 }
 
 .masthead h1 {
   margin: 0;
-  font-size: 38px;
+  font-size: 42px;
   line-height: 0.9;
 }
 
@@ -610,7 +616,7 @@ h3 {
 /* Lobby: honoree name */
 .mast-honoree {
   font-family: var(--serif);
-  font-size: 26px;
+  font-size: 28px;
   font-style: italic;
   line-height: 1;
 }
@@ -618,7 +624,7 @@ h3 {
 /* Non-lobby flavor text (results, leaderboard) */
 .mast-subtitle {
   font-family: var(--serif);
-  font-size: 22px;
+  font-size: 24px;
   font-style: italic;
   line-height: 1;
   color: var(--muted);
@@ -626,21 +632,47 @@ h3 {
 
 /* Timer in masthead */
 .mast-timer {
-  font-size: 68px !important;
+  font-size: 68px;
   line-height: 1;
   letter-spacing: -2px;
 }
 
+.screen-body[data-phase="prompt"] {
+  background: var(--ink);
+  color: var(--paper);
+}
+
+/* screen-only has its own background, so override it in prompt phase */
+.screen-body[data-phase="prompt"] .screen-only {
+  background: var(--ink);
+}
+
 .screen-body[data-phase="prompt"] .masthead,
 .screen-body[data-phase="prompt"] .screen-footer {
-  color: rgba(243, 236, 224, 0.72);
+  color: rgba(243, 236, 224, 0.6);
+}
+
+.screen-body[data-phase="prompt"] .mast-subtitle {
+  color: rgba(243, 236, 224, 0.45);
+}
+
+.screen-body[data-phase="prompt"] .eyebrow {
+  color: rgba(243, 236, 224, 0.55);
+}
+
+.screen-body[data-phase="prompt"] .text-prompt-note {
+  color: rgba(243, 236, 224, 0.5);
+}
+
+.screen-body[data-phase="prompt"] .screen-footer span:nth-child(2) {
+  color: rgba(243, 236, 224, 0.6);
 }
 
 .stage {
   position: relative;
   flex: 1;
   min-height: 0;
-  padding: 22px 0 10px;
+  padding: 20px 0 16px;
   display: flex;
   flex-direction: column;
 }
@@ -651,11 +683,12 @@ h3 {
   justify-content: space-between;
   gap: 18px;
   border-top: 1px solid currentColor;
-  padding-top: 10px;
+  padding: 10px 0 16px;
   font-family: var(--mono);
   font-size: 12px;
   letter-spacing: 2px;
   text-transform: uppercase;
+  flex-shrink: 0;
 }
 
 .screen-footer span:nth-child(2) {
@@ -665,7 +698,7 @@ h3 {
 
 .screen-lobby {
   display: grid;
-  grid-template-columns: 1.08fr 1fr;
+  grid-template-columns: 1fr 1fr;
   gap: 48px;
   flex: 1;
 }
@@ -680,6 +713,17 @@ h3 {
 .screen-submit h2 em {
   color: var(--clay);
   font-style: italic;
+}
+
+.lobby-right {
+  display: flex;
+  flex-direction: column;
+}
+
+.join-block--bottom {
+  margin-top: auto;
+  padding-top: 14px;
+  justify-content: center;
 }
 
 .screen-lede {
@@ -709,6 +753,8 @@ h3 {
 }
 
 .screen-rules span {
+  min-width: 1.6em;
+  flex-shrink: 0;
   color: var(--clay);
   font-style: italic;
 }
@@ -723,8 +769,8 @@ h3 {
 .qr-box {
   display: grid;
   place-items: center;
-  width: 200px;
-  height: 200px;
+  width: 140px;
+  height: 140px;
   border: 2px solid var(--ink);
   background: var(--white);
   color: var(--muted);
@@ -776,10 +822,10 @@ h3 {
 
 .screen-player-list span {
   border: 1.5px solid var(--ink);
-  padding: 14px 22px;
+  padding: 9px 16px;
   background: var(--paper-deep);
   font-family: var(--serif);
-  font-size: 32px;
+  font-size: 22px;
   font-style: italic;
   transform: rotate(var(--tilt, 0deg));
 }
@@ -894,14 +940,14 @@ h3 {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 8px;
-  max-width: 420px;
+  gap: 4px;
   margin: 0 auto 14px;
 }
 
 .dot-grid span {
-  width: 24px;
-  height: 24px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
   border: 1.5px solid var(--ink);
   border-radius: 999px;
 }
@@ -926,17 +972,20 @@ h3 {
 .video-state {
   position: relative;
   flex: 1;
-  display: grid;
-  grid-template-rows: 1fr auto;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
   background: var(--ink);
   color: var(--paper);
 }
 
 .video-frame {
+  flex: 1;
+  min-height: 0;
   display: grid;
   place-items: center;
-  width: min(1280px, calc(100% - 40px));
-  aspect-ratio: 16 / 9;
+  width: calc(100% - 40px);
+  max-width: 1280px;
   margin: 14px auto 0;
   border: 2px solid rgba(243, 236, 224, 0.25);
   background: repeating-linear-gradient(135deg, #15110e 0 16px, #1f1814 16px 17px);
@@ -985,12 +1034,12 @@ h3 {
   display: grid;
   align-content: center;
   flex: 1;
-  padding: 34px 0 42px;
+  padding: 40px 0;
 }
 
 .text-prompt-state h2 {
   max-width: 1280px;
-  margin: 8px 0 0;
+  margin: 0;
   font-family: var(--serif);
   font-size: 88px;
   line-height: 0.9;
@@ -1018,6 +1067,8 @@ h3 {
 
 .screen-round {
   flex: 1;
+  display: flex;
+  flex-direction: column;
 }
 
 .round-heading {
@@ -1030,7 +1081,7 @@ h3 {
 
 .screen-prompt {
   max-width: 1320px;
-  margin: 4px 0 26px;
+  margin: 0 0 24px;
   font-family: var(--serif);
   font-size: 56px;
   line-height: 0.98;
@@ -1041,8 +1092,10 @@ h3 {
 .answers-grid,
 .results-grid {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 18px;
+  grid-template-columns: repeat(2, 1fr);
+  grid-template-rows: 1fr 1fr;
+  gap: 24px;
+  flex: 1;
 }
 
 /* ── Shared answer card system ── */
@@ -1075,12 +1128,15 @@ h3 {
 /* The card itself — identical across answers / voting / results */
 .answer-card {
   position: relative;
-  min-height: 240px;
+  min-height: 140px;
   border: 1.5px solid var(--ink);
-  padding: 28px 24px 52px;
+  padding: 12px 20px 40px;
   background: var(--paper-deep);
   display: flex;
-  align-items: flex-start;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
 }
 
 /* All cards uniform — no alternating backgrounds */
@@ -1091,6 +1147,7 @@ h3 {
   font-size: clamp(16px, 2vw, 30px);
   font-style: italic;
   line-height: 1.2;
+  text-align: center;
 }
 
 /* Bachelor ribbon — subtle top-right tag */
@@ -1135,7 +1192,7 @@ h3 {
   background: var(--ink);
   font-size: 9px;
   opacity: 0;
-  animation: dotPop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  animation: dotPop 0.18s cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 .crown-dot {
@@ -1163,19 +1220,19 @@ h3 {
 
 /* Placeholder for unrevealed cards */
 .answer-placeholder {
-  min-height: 240px;
+  min-height: 140px;
   border: 1.5px dashed rgba(26, 22, 18, 0.18);
   background: transparent;
 }
 
 /* Reveal animation */
 @keyframes answerEnter {
-  from { opacity: 0; transform: translateY(14px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(28px) scale(0.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .answer-enter {
-  animation: answerEnter 0.38s ease both;
+  animation: answerEnter 0.55s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
 
@@ -1356,7 +1413,7 @@ h3 {
   align-items: baseline;
   gap: 10px;
   border-bottom: 1px solid rgba(26,22,18,0.10);
-  padding: 9px 0;
+  padding: 7px 0;
   font-family: var(--serif);
   font-size: 22px;
   line-height: 1;
