@@ -6,7 +6,12 @@ const crypto = require("crypto");
 const PORT = Number(process.env.PORT || 3000);
 const HOST_PIN = process.env.HOST_PIN || "chucklash";
 const ROOM_CODE = process.env.ROOM_CODE || "CHUCK";
-const DATA_DIR = path.join(__dirname, "data");
+// On Render, persist data on the mounted disk so redeploys don't wipe prompts/results
+const RENDER_DISK = "/opt/render/project/src/public/videos";
+const DATA_DIR = fs.existsSync(RENDER_DISK)
+  ? path.join(RENDER_DISK, "_data")
+  : path.join(__dirname, "data");
+fs.mkdirSync(DATA_DIR, { recursive: true });
 const PROMPTS_FILE = path.join(DATA_DIR, "prompts.json");
 const RESULTS_FILE = path.join(DATA_DIR, "results.json");
 const PUBLIC_DIR = path.join(__dirname, "public");
@@ -41,7 +46,15 @@ function loadPrompts() {
   try {
     return JSON.parse(fs.readFileSync(PROMPTS_FILE, "utf8"));
   } catch {
-    return [];
+    // First run on persistent disk — seed from the git copy if it exists
+    try {
+      const seed = path.join(__dirname, "data", "prompts.json");
+      const prompts = JSON.parse(fs.readFileSync(seed, "utf8"));
+      fs.writeFileSync(PROMPTS_FILE, JSON.stringify(prompts, null, 2));
+      return prompts;
+    } catch {
+      return [];
+    }
   }
 }
 
