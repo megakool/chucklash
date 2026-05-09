@@ -8,7 +8,8 @@ const els = {
   answerInput: document.getElementById("answerInput"),
   voteForm: document.getElementById("voteForm"),
   voteList: document.getElementById("voteList"),
-  roomCode: document.getElementById("roomCode")
+  roomCode: document.getElementById("roomCode"),
+  charCount: document.getElementById("charCount")
 };
 
 let playerId = localStorage.getItem("chucklashPlayerId") || "";
@@ -25,6 +26,12 @@ async function api(path, options = {}) {
   if (!response.ok) throw new Error(body.error || "Request failed");
   return body;
 }
+
+// Live character counter
+els.answerInput.addEventListener("input", () => {
+  const len = els.answerInput.value.length;
+  if (els.charCount) els.charCount.textContent = `${len} / 240`;
+});
 
 els.joinForm.addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -75,19 +82,26 @@ function render() {
   els.voteForm.classList.add("hidden");
 
   const prompt = state.prompt;
+
   if (state.phase === "lobby") {
     els.status.innerHTML = `
-      <div class="phone-state">
-        <p class="eyebrow">Joined as ${escapeHtml(state.me.name)}</p>
-        <h2>You're in.</h2>
-        <p class="small-note">Keep this tab open. The first prompt will appear here when the host starts.</p>
+      <div class="p-screen p-screen--lobby">
+        <div class="p-badge">You're In ✓</div>
+        <h2 class="p-lobby-name">${escapeHtml(state.me.name)}</h2>
+        <p class="p-lobby-note">Keep this tab open. The host will kick things off from the main screen.</p>
+        <div class="p-waiting-dots"><span></span><span></span><span></span></div>
       </div>
     `;
     return;
   }
 
   if (!prompt) {
-    els.status.innerHTML = `<h2>Game over.</h2>${leaderboardMarkup()}`;
+    els.status.innerHTML = `
+      <div class="p-screen p-screen--results">
+        <h2 class="p-results-heading">Game over.</h2>
+        ${leaderboardMarkup()}
+      </div>
+    `;
     return;
   }
 
@@ -96,10 +110,11 @@ function render() {
 
   if (state.phase === "prompt") {
     els.status.innerHTML = `
-      <div class="phone-state">
-        <p class="eyebrow">Round ${state.currentPromptIndex + 1} of ${state.totalPrompts}</p>
-        <h2>Look up.</h2>
-        <p class="small-note">The video and prompt are on the main screen.</p>
+      <div class="p-screen p-screen--lookup">
+        <p class="p-chip">Round ${state.currentPromptIndex + 1} of ${state.totalPrompts}</p>
+        <div class="p-lookup-arrow">↑</div>
+        <h2 class="p-lookup-heading">Look up.</h2>
+        <p class="p-lookup-note">The video and prompt are on the main screen.</p>
       </div>
     `;
     return;
@@ -107,25 +122,35 @@ function render() {
 
   if (state.phase === "answering") {
     if (duel && !isDuelAnswerer) {
-      els.status.innerHTML = `<h2>You're voting this round.</h2><p class="small-note">The two answerers are working now.</p>`;
+      els.status.innerHTML = `
+        <div class="p-screen p-screen--standby">
+          <h2 class="p-standby-heading">You're voting<br>this round.</h2>
+          <p class="p-standby-note">The two answerers are working now.</p>
+        </div>
+      `;
       return;
     }
     els.status.innerHTML = `
-      <div class="round-chip">Round ${state.currentPromptIndex + 1} of ${state.totalPrompts}</div>
-      <p class="eyebrow">Answer this</p>
-      <div class="phone-prompt">${escapeHtml(prompt.text)}</div>
+      <div class="p-screen p-screen--answering">
+        <p class="p-chip">Round ${state.currentPromptIndex + 1} of ${state.totalPrompts}</p>
+        <p class="p-kicker">Answer this</p>
+        <div class="p-prompt-text">${escapeHtml(prompt.text)}</div>
+      </div>
     `;
     els.answerInput.value = state.myAnswer || "";
+    if (els.charCount) els.charCount.textContent = `${els.answerInput.value.length} / 240`;
     els.answerForm.classList.remove("hidden");
     return;
   }
 
   if (state.phase === "voting") {
     els.status.innerHTML = `
-      <div class="round-chip">Round ${state.currentPromptIndex + 1} of ${state.totalPrompts}</div>
-      <p class="eyebrow">Vote now</p>
-      <div class="phone-prompt">${escapeHtml(prompt.text)}</div>
-      <p class="small-note">${duel ? "Pick one answer." : "Spend up to 3 votes. You can stack them."}</p>
+      <div class="p-screen p-screen--voting">
+        <p class="p-chip">Round ${state.currentPromptIndex + 1} of ${state.totalPrompts}</p>
+        <p class="p-kicker">Vote now</p>
+        <div class="p-prompt-text p-prompt-text--sm">${escapeHtml(prompt.text)}</div>
+        <p class="p-vote-instruction">${duel ? "Pick one answer." : "Spend up to 3 votes. You can stack them."}</p>
+      </div>
     `;
     renderVotes(duel ? 1 : 3);
     els.voteForm.classList.remove("hidden");
@@ -134,16 +159,21 @@ function render() {
 
   if (state.phase === "answers") {
     els.status.innerHTML = `
-      <div class="phone-state">
-        <h2>Answers are up.</h2>
-        <p class="small-note">Look at the main screen.</p>
+      <div class="p-screen p-screen--reveal">
+        <h2 class="p-reveal-heading">Answers<br>are up.</h2>
+        <p class="p-reveal-note">Look at the main screen.</p>
       </div>
     `;
     return;
   }
 
   if (state.phase === "results" || state.phase === "leaderboard" || state.phase === "finished") {
-    els.status.innerHTML = `<h2>${state.phase === "results" ? "Results" : "Leaderboard"}</h2>${leaderboardMarkup()}`;
+    els.status.innerHTML = `
+      <div class="p-screen p-screen--results">
+        <h2 class="p-results-heading">${state.phase === "results" ? "Results" : "Leaderboard"}</h2>
+        ${leaderboardMarkup()}
+      </div>
+    `;
   }
 }
 
@@ -160,13 +190,15 @@ function renderVotes(maxVotes) {
     .map((answer) => {
       const selected = draftVotes[answer.playerId] || 0;
       return `
-        <article class="vote-card">
-          <strong>${escapeHtml(answer.text)}</strong>
-          <span class="small-note">${escapeHtml(answer.playerName)}</span>
-          <div class="vote-buttons">
-            ${Array.from({ length: maxVotes + 1 }, (_, count) => `
-              <button type="button" class="${selected === count ? "selected" : ""}" data-vote="${answer.playerId}" data-count="${count}">${count}</button>
-            `).join("")}
+        <article class="p-vote-card">
+          <div class="p-vote-card__answer">${escapeHtml(answer.text)}</div>
+          <div class="p-vote-card__bar">
+            <span class="p-vote-card__name">${escapeHtml(answer.playerName)}</span>
+            <div class="p-vote-btns">
+              ${Array.from({ length: maxVotes + 1 }, (_, count) => `
+                <button type="button" class="${selected === count ? "selected" : ""}" data-vote="${answer.playerId}" data-count="${count}">${count}</button>
+              `).join("")}
+            </div>
           </div>
         </article>
       `;
@@ -187,12 +219,13 @@ function renderVotes(maxVotes) {
 
 function leaderboardMarkup() {
   const players = [...state.players].sort((a, b) => (state.scores[b.id] || 0) - (state.scores[a.id] || 0));
-  return `<div class="leaderboard">${players.map((player) => `
-    <div class="score-row">
-      <span>${escapeHtml(player.name)}${player.isBachelor ? " - Chuck" : ""}</span>
-      <strong>${state.scores[player.id] || 0}</strong>
-    </div>
-  `).join("")}</div>`;
+  return `<ol class="p-score-list">${players.map((player, i) => `
+    <li class="p-score-row">
+      <span class="p-score-rank">${i + 1}</span>
+      <span class="p-score-name">${escapeHtml(player.name)}${player.isBachelor ? ' <span class="p-score-chuck">chuck</span>' : ""}</span>
+      <strong class="p-score-pts">${state.scores[player.id] || 0}</strong>
+    </li>
+  `).join("")}</ol>`;
 }
 
 function escapeHtml(value) {

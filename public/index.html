@@ -10,40 +10,61 @@
     <link rel="stylesheet" href="/styles.css">
   </head>
   <body class="phone-body">
-    <main class="phone-shell">
-      <section class="brand">
-        <p class="eyebrow">Vol. I · Bachelor Party Game</p>
-        <h1>Chuck-Lash</h1>
-        <p id="roomCode" class="room-code">Room CHUCK</p>
-      </section>
+    <div class="phone-shell">
 
-      <section id="joinCard" class="panel">
-        <h2>Join the game</h2>
-        <form id="joinForm" class="stack">
-          <label>
-            Display name
-            <input id="nameInput" autocomplete="name" maxlength="32" placeholder="Your name">
-          </label>
-          <button type="submit">Join</button>
+      <!-- Persistent top nav -->
+      <header class="p-nav">
+        <div class="p-nav__brand">
+          <span class="p-nav__sub">Bachelor Party Game</span>
+          <span class="p-nav__title">Chuck-Lash</span>
+        </div>
+        <p id="roomCode" class="room-code">Room ···</p>
+      </header>
+
+      <!-- Join screen -->
+      <section id="joinCard" class="p-join">
+        <div class="p-join__hero">
+          <p class="p-kicker">You're invited</p>
+          <h1 class="p-join__heading">Join<br><em>the game.</em></h1>
+          <p class="p-join__flavor">Enter your name to jump in.</p>
+        </div>
+        <form id="joinForm" class="p-join__form">
+          <div class="p-field">
+            <label for="nameInput">Display name</label>
+            <input id="nameInput" autocomplete="name" maxlength="32" placeholder="e.g. Mike D">
+          </div>
+          <button type="submit" class="p-primary-btn">Enter the Game</button>
         </form>
       </section>
 
-      <section id="gameCard" class="panel hidden">
+      <!-- Game screen (hidden until joined) -->
+      <section id="gameCard" class="p-game hidden">
+
+        <!-- Dynamic phase content -->
         <div id="status"></div>
-        <form id="answerForm" class="stack hidden">
-          <label>
-            Your answer
-            <textarea id="answerInput" maxlength="240" rows="5" placeholder="Type something memorable"></textarea>
-          </label>
-          <button type="submit">Submit Answer</button>
+
+        <!-- Answer form — shown during answering phase -->
+        <form id="answerForm" class="p-answer-form hidden">
+          <div class="p-field">
+            <label for="answerInput">Your answer</label>
+            <textarea id="answerInput" maxlength="240" rows="4" placeholder="Write something they'll remember…"></textarea>
+          </div>
+          <div class="p-answer-actions">
+            <span class="p-char-count" id="charCount">0 / 240</span>
+            <button type="submit" class="p-primary-btn p-primary-btn--auto">Submit Answer</button>
+          </div>
         </form>
 
-        <form id="voteForm" class="stack hidden">
-          <div id="voteList" class="vote-list"></div>
-          <button type="submit">Lock Votes</button>
+        <!-- Vote form — shown during voting phase -->
+        <form id="voteForm" class="p-vote-form hidden">
+          <div id="voteList" class="p-vote-list"></div>
+          <div class="p-vote-cta">
+            <button type="submit" class="p-primary-btn">Lock In Votes</button>
+          </div>
         </form>
+
       </section>
-    </main>
+    </div>
     <script src="/player.js"></script>
   </body>
 </html>

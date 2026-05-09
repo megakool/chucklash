@@ -1,0 +1,337 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chuck-Lash — Player Screen Preview</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+    <style>
+      .preview-bg {
+        padding: 48px 32px 64px;
+        background: #b0a898;
+        min-height: 100vh;
+      }
+
+      .preview-masthead {
+        max-width: 1480px;
+        margin: 0 auto 48px;
+        display: flex;
+        align-items: baseline;
+        justify-content: space-between;
+        gap: 24px;
+        border-bottom: 1.5px solid var(--ink);
+        padding-bottom: 16px;
+      }
+
+      .preview-masthead h1 {
+        margin: 0;
+        font-family: var(--serif);
+        font-size: 44px;
+        line-height: 0.9;
+        letter-spacing: -0.03em;
+      }
+
+      .preview-masthead p {
+        margin: 0;
+        font-family: var(--mono);
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 2px;
+        text-transform: uppercase;
+        color: var(--muted);
+      }
+
+      .preview-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 36px;
+        max-width: 1480px;
+        margin: 0 auto;
+        align-items: start;
+      }
+
+      .preview-item {
+        flex-shrink: 0;
+      }
+
+      .preview-label {
+        font-family: var(--mono);
+        font-size: 9px;
+        font-weight: 800;
+        letter-spacing: 2.5px;
+        text-transform: uppercase;
+        color: rgba(26,22,18,0.55);
+        margin: 0 0 10px;
+      }
+
+      .preview-item .phone-shell {
+        width: 310px;
+        min-height: auto;
+        box-shadow: 8px 8px 0 rgba(26,22,18,0.18);
+      }
+
+      /* Disable all interactions in preview */
+      .preview-item button,
+      .preview-item input,
+      .preview-item textarea {
+        pointer-events: none;
+      }
+    </style>
+  </head>
+  <body class="phone-body preview-bg">
+
+    <div class="preview-masthead">
+      <h1>Player Screens</h1>
+      <p>Chuck-Lash · All 8 states</p>
+    </div>
+
+    <div class="preview-grid">
+
+      <!-- 1. Join -->
+      <div class="preview-item">
+        <p class="preview-label">1 · Join</p>
+        <div class="phone-shell">
+          <header class="p-nav">
+            <div class="p-nav__brand">
+              <span class="p-nav__sub">Bachelor Party Game</span>
+              <span class="p-nav__title">Chuck-Lash</span>
+            </div>
+            <p class="room-code" style="margin:10px 16px;">Room CHUCK</p>
+          </header>
+          <section class="p-join">
+            <div class="p-join__hero">
+              <p class="p-kicker">You're invited</p>
+              <h1 class="p-join__heading">Join<br><em>the game.</em></h1>
+              <p class="p-join__flavor">Enter your name to jump in.</p>
+            </div>
+            <div class="p-join__form">
+              <div class="p-field">
+                <label>Display name</label>
+                <input placeholder="e.g. Mike D">
+              </div>
+              <button class="p-primary-btn">Enter the Game</button>
+            </div>
+          </section>
+        </div>
+      </div>
+
+      <!-- 2. Lobby -->
+      <div class="preview-item">
+        <p class="preview-label">2 · Lobby (waiting for host)</p>
+        <div class="phone-shell">
+          <header class="p-nav">
+            <div class="p-nav__brand">
+              <span class="p-nav__sub">Bachelor Party Game</span>
+              <span class="p-nav__title">Chuck-Lash</span>
+            </div>
+            <p class="room-code" style="margin:10px 16px;">Room CHUCK</p>
+          </header>
+          <div class="p-game">
+            <div class="p-screen p-screen--lobby">
+              <div class="p-badge">You're In ✓</div>
+              <h2 class="p-lobby-name">Mike D</h2>
+              <p class="p-lobby-note">Keep this tab open. The host will kick things off from the main screen.</p>
+              <div class="p-waiting-dots"><span></span><span></span><span></span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. Look Up -->
+      <div class="preview-item">
+        <p class="preview-label">3 · Prompt phase (look at screen)</p>
+        <div class="phone-shell">
+          <header class="p-nav">
+            <div class="p-nav__brand">
+              <span class="p-nav__sub">Bachelor Party Game</span>
+              <span class="p-nav__title">Chuck-Lash</span>
+            </div>
+            <p class="room-code" style="margin:10px 16px;">Room CHUCK</p>
+          </header>
+          <div class="p-game">
+            <div class="p-screen p-screen--lookup">
+              <p class="p-chip">Round 1 of 8</p>
+              <div class="p-lookup-arrow">↑</div>
+              <h2 class="p-lookup-heading">Look up.</h2>
+              <p class="p-lookup-note">The video and prompt are on the main screen.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 4. Answering -->
+      <div class="preview-item">
+        <p class="preview-label">4 · Answering phase</p>
+        <div class="phone-shell">
+          <header class="p-nav">
+            <div class="p-nav__brand">
+              <span class="p-nav__sub">Bachelor Party Game</span>
+              <span class="p-nav__title">Chuck-Lash</span>
+            </div>
+            <p class="room-code" style="margin:10px 16px;">Room CHUCK</p>
+          </header>
+          <div class="p-game">
+            <div class="p-screen p-screen--answering">
+              <p class="p-chip">Round 1 of 8</p>
+              <p class="p-kicker">Answer this</p>
+              <div class="p-prompt-text">If Chuck had a signature cologne, what would it be called?</div>
+            </div>
+            <div class="p-answer-form">
+              <div class="p-field">
+                <label>Your answer</label>
+                <textarea rows="3" placeholder="Write something they'll remember…"></textarea>
+              </div>
+              <div class="p-answer-actions">
+                <span class="p-char-count">0 / 240</span>
+                <button class="p-primary-btn p-primary-btn--auto">Submit Answer</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 5. Duel Standby -->
+      <div class="preview-item">
+        <p class="preview-label">5 · Duel mode (you're voting)</p>
+        <div class="phone-shell">
+          <header class="p-nav">
+            <div class="p-nav__brand">
+              <span class="p-nav__sub">Bachelor Party Game</span>
+              <span class="p-nav__title">Chuck-Lash</span>
+            </div>
+            <p class="room-code" style="margin:10px 16px;">Room CHUCK</p>
+          </header>
+          <div class="p-game">
+            <div class="p-screen p-screen--standby">
+              <h2 class="p-standby-heading">You're voting<br>this round.</h2>
+              <p class="p-standby-note">The two answerers are working now.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 6. Voting -->
+      <div class="preview-item">
+        <p class="preview-label">6 · Voting phase</p>
+        <div class="phone-shell">
+          <header class="p-nav">
+            <div class="p-nav__brand">
+              <span class="p-nav__sub">Bachelor Party Game</span>
+              <span class="p-nav__title">Chuck-Lash</span>
+            </div>
+            <p class="room-code" style="margin:10px 16px;">Room CHUCK</p>
+          </header>
+          <div class="p-game">
+            <div class="p-screen p-screen--voting">
+              <p class="p-chip">Round 1 of 8</p>
+              <p class="p-kicker">Vote now</p>
+              <div class="p-prompt-text p-prompt-text--sm">If Chuck had a signature cologne, what would it be called?</div>
+              <p class="p-vote-instruction">Spend up to 3 votes. You can stack them.</p>
+            </div>
+            <div class="p-vote-form" style="display:flex; flex-direction:column;">
+              <div class="p-vote-list">
+                <article class="p-vote-card">
+                  <div class="p-vote-card__answer">Old Spice mixed with regret and motor oil</div>
+                  <div class="p-vote-card__bar">
+                    <span class="p-vote-card__name">Sarah</span>
+                    <div class="p-vote-btns">
+                      <button type="button" class="selected">0</button>
+                      <button type="button">1</button>
+                      <button type="button">2</button>
+                      <button type="button">3</button>
+                    </div>
+                  </div>
+                </article>
+                <article class="p-vote-card">
+                  <div class="p-vote-card__answer">Pure confidence, fresh-cut grass, 1% danger</div>
+                  <div class="p-vote-card__bar">
+                    <span class="p-vote-card__name">Dave</span>
+                    <div class="p-vote-btns">
+                      <button type="button">0</button>
+                      <button type="button" class="selected">1</button>
+                      <button type="button">2</button>
+                      <button type="button">3</button>
+                    </div>
+                  </div>
+                </article>
+              </div>
+              <div class="p-vote-cta">
+                <button class="p-primary-btn">Lock In Votes</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 7. Answers Up -->
+      <div class="preview-item">
+        <p class="preview-label">7 · Answers revealed (watch screen)</p>
+        <div class="phone-shell">
+          <header class="p-nav">
+            <div class="p-nav__brand">
+              <span class="p-nav__sub">Bachelor Party Game</span>
+              <span class="p-nav__title">Chuck-Lash</span>
+            </div>
+            <p class="room-code" style="margin:10px 16px;">Room CHUCK</p>
+          </header>
+          <div class="p-game">
+            <div class="p-screen p-screen--reveal">
+              <h2 class="p-reveal-heading">Answers<br>are up.</h2>
+              <p class="p-reveal-note">Look at the main screen.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 8. Leaderboard -->
+      <div class="preview-item">
+        <p class="preview-label">8 · Results / Leaderboard</p>
+        <div class="phone-shell">
+          <header class="p-nav">
+            <div class="p-nav__brand">
+              <span class="p-nav__sub">Bachelor Party Game</span>
+              <span class="p-nav__title">Chuck-Lash</span>
+            </div>
+            <p class="room-code" style="margin:10px 16px;">Room CHUCK</p>
+          </header>
+          <div class="p-game">
+            <div class="p-screen p-screen--results">
+              <h2 class="p-results-heading">Leaderboard</h2>
+              <ol class="p-score-list">
+                <li class="p-score-row">
+                  <span class="p-score-rank">1</span>
+                  <span class="p-score-name">Mike D</span>
+                  <strong class="p-score-pts">12</strong>
+                </li>
+                <li class="p-score-row">
+                  <span class="p-score-rank">2</span>
+                  <span class="p-score-name">Sarah</span>
+                  <strong class="p-score-pts">9</strong>
+                </li>
+                <li class="p-score-row">
+                  <span class="p-score-rank">3</span>
+                  <span class="p-score-name">Chuck <span class="p-score-chuck">chuck</span></span>
+                  <strong class="p-score-pts">7</strong>
+                </li>
+                <li class="p-score-row">
+                  <span class="p-score-rank">4</span>
+                  <span class="p-score-name">Dave</span>
+                  <strong class="p-score-pts">4</strong>
+                </li>
+                <li class="p-score-row">
+                  <span class="p-score-rank">5</span>
+                  <span class="p-score-name">Jenny</span>
+                  <strong class="p-score-pts">3</strong>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </body>
+</html>
