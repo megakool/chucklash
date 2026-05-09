@@ -50,8 +50,8 @@ function render() {
   els.screenMastRight.innerHTML = mastRightHtml(state.phase);
 
   if (state.phase === "lobby")                                   { stopTimer(); renderLobby();       return; }
-  if (!state.prompt || state.phase === "finished")               { stopTimer(); renderFinished();    return; }
   if (state.phase === "answering")                               {              renderAnswering();   return; }
+  if (!state.prompt || state.phase === "finished")               { stopTimer(); renderFinished();    return; }
   if (state.phase === "prompt")                                  { stopTimer(); renderPrompt();      return; }
   if (state.phase === "answers" || state.phase === "voting")     {              renderAnswersPhase();return; }
   if (state.phase === "results")                                 { stopTimer(); renderResults();     return; }
