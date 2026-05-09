@@ -365,7 +365,7 @@ function serveStatic(req, res) {
       return;
     }
     if (err) { res.writeHead(404); res.end("Not found"); return; }
-    const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json" };
+    const types = { ".html": "text/html; charset=utf-8", ".css": "text/css; charset=utf-8", ".js": "text/javascript; charset=utf-8", ".json": "application/json", ".mp4": "video/mp4", ".mov": "video/mp4", ".m4v": "video/mp4", ".webm": "video/webm" };
     res.writeHead(200, { "content-type": types[path.extname(filePath)] || "application/octet-stream" });
     res.end(content);
   });
