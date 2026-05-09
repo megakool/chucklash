@@ -10,6 +10,7 @@ const els = {
 
 let playerId = localStorage.getItem("chucklashPlayerId") || "";
 let state = null;
+let lastUpdatedAt = 0;
 
 // ─── API ──────────────────────────────────────────────────────────────────────
 
@@ -42,8 +43,12 @@ els.joinForm.addEventListener("submit", async event => {
 async function refresh() {
   if (!playerId) return;
   try {
-    state = await api(`/api/state?playerId=${encodeURIComponent(playerId)}`);
-    render();
+    const newState = await api(`/api/state?playerId=${encodeURIComponent(playerId)}`);
+    if (newState.updatedAt !== lastUpdatedAt) {
+      lastUpdatedAt = newState.updatedAt;
+      state = newState;
+      render();
+    }
   } catch (err) {
     console.warn(err);
     if (els.gameCard && !els.gameCard.classList.contains("hidden")) {
