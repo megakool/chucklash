@@ -1,0 +1,13 @@
+{
+  "name": "chuck-lash",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A bachelor-party prompt and voting game.",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

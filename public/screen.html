@@ -1,0 +1,123 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chuck-Lash Screen</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body class="screen-body">
+    <main class="screen-only">
+      <div class="screen-top masthead">
+        <div>
+          <h1>Chuck-Lash<span>.</span></h1>
+        </div>
+        <div id="screenMastRight" class="mast-meta"></div>
+      </div>
+
+      <div id="screenStage" class="stage"></div>
+      <footer class="screen-footer">
+        <span>chuck-lash · vol i · room <span id="screenFooterRoom">CHUCK</span></span>
+        <span id="screenFooterMid">the lobby</span>
+        <span id="screenFooterRight">chapter 00 / 10</span>
+      </footer>
+    </main>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="/screen.js"></script>
+
+    <!-- DEV REVIEW BAR - remove before party -->
+    <div id="devBar" style="
+      position: fixed; bottom: 0; left: 0; right: 0; z-index: 9999;
+      display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+      padding: 6px 12px;
+      background: rgba(26,22,18,0.88);
+      backdrop-filter: blur(4px);
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 10px; font-weight: 800; letter-spacing: 1px;
+    ">
+      <span style="color:#b54a1f; text-transform:uppercase; margin-right:4px;">Dev</span>
+      <button onclick="devSetup()" style="background:#b54a1f; color:#f3ece0; border:none; padding:4px 10px; cursor:pointer; font:inherit; text-transform:uppercase; letter-spacing:1px;">Demo Setup</button>
+      <span style="color:#6b6055; margin: 0 2px;">|</span>
+      <button onclick="devPhase('lobby')">Lobby</button>
+      <button onclick="devPhase('answering')">Answering</button>
+      <button onclick="devPhase('prompt')">Prompt</button>
+      <button onclick="devPhase('answers')">Answers</button>
+      <button onclick="devPhase('voting')">Voting</button>
+      <button onclick="devPhase('results')">Results</button>
+      <button onclick="devPhase('leaderboard')">Leaderboard</button>
+      <button onclick="devPhase('finished')">Finished</button>
+      <span style="color:#6b6055; margin-left:auto; font-size:9px;">run Demo Setup first · remove before party</span>
+    </div>
+    <style>
+      #devBar button {
+        background: rgba(243,236,224,0.12); color: #f3ece0;
+        border: 1px solid rgba(243,236,224,0.2);
+        padding: 4px 10px; cursor: pointer;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 10px; font-weight: 800;
+        letter-spacing: 1px; text-transform: uppercase;
+        min-height: unset;
+      }
+      #devBar button:hover { background: rgba(243,236,224,0.25); }
+    </style>
+    <script>
+      const DEV_PIN = "chucklash";
+
+      async function devApi(path, body = {}) {
+        await fetch(`/api/host/${path}`, {
+          method: "POST",
+          headers: { "content-type": "application/json", "x-host-pin": DEV_PIN },
+          body: JSON.stringify(body)
+        });
+      }
+
+      function devResetClientState() {
+        resultsRendered.promptId = null;
+        answersReveal.promptId = null;
+        answersReveal.count = 0;
+        if (answersReveal.timer) {
+          clearTimeout(answersReveal.timer);
+          answersReveal.timer = null;
+        }
+        timerState.phase = null;
+        if (timerState.rafId) {
+          cancelAnimationFrame(timerState.rafId);
+          timerState.rafId = null;
+        }
+        lastUpdatedAt = 0;
+      }
+
+      async function ensureDemoReady() {
+        if (!state || state.currentPromptIndex < 0) {
+          await devApi("demo-lobby");
+          await devApi("start-game");
+          await devApi("demo-answers");
+          await devApi("demo-votes");
+        }
+      }
+
+      async function devSetup() {
+        await devApi("demo-lobby");
+        await devApi("start-game");
+        await devApi("demo-answers");
+        await devApi("demo-votes");
+        devResetClientState();
+        refresh();
+      }
+
+      async function devPhase(phase) {
+        devResetClientState();
+        if (phase === "lobby") {
+          await devApi("demo-lobby");
+        } else {
+          await ensureDemoReady();
+          await devApi("set-phase", { phase });
+        }
+        refresh();
+      }
+    </script>
+  </body>
+</html>

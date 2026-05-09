@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chuck-Lash Host</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body class="host-body">
+    <main class="host-console">
+      <section class="controls">
+        <p class="eyebrow">Run of show</p>
+        <h2>Host Controls</h2>
+        <label>
+          Host PIN
+          <input id="pinInput" type="password" value="chucklash">
+        </label>
+        <div id="hostStage" class="host-status"></div>
+        <div id="flowControls" class="control-grid"></div>
+        <a class="download-link" href="/screen.html" target="_blank">Open main game screen</a>
+      </section>
+
+      <section class="controls">
+        <p class="eyebrow">Preview</p>
+        <h3>Demo Walkthrough</h3>
+        <p class="small-note">Use these to preview the game without phones. Keep the main game screen open beside it or on the TV.</p>
+        <div id="demoControls" class="demo-grid">
+          <button type="button" data-demo-action="demo-lobby">Load Demo Lobby</button>
+          <button type="button" data-demo-action="demo-answers">Fill Demo Answers</button>
+          <button type="button" data-demo-action="demo-votes">Cast Demo Votes</button>
+          <button type="button" id="autoDemoButton" class="primary">Auto-Run Round</button>
+        </div>
+      </section>
+
+      <section class="controls">
+        <p class="eyebrow">In the room</p>
+        <h3>Players</h3>
+        <div id="playerAdmin" class="player-admin"></div>
+        <a class="download-link" href="/api/results" target="_blank">Open saved results JSON</a>
+      </section>
+    </main>
+    <script src="/host.js"></script>
+  </body>
+</html>

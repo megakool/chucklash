@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chuck-Lash</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600;700&family=DM+Serif+Display:ital@0;1&family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/styles.css">
+  </head>
+  <body class="phone-body">
+    <main class="phone-shell">
+      <section class="brand">
+        <p class="eyebrow">Vol. I · Bachelor Party Game</p>
+        <h1>Chuck-Lash</h1>
+        <p id="roomCode" class="room-code">Room CHUCK</p>
+      </section>
+
+      <section id="joinCard" class="panel">
+        <h2>Join the game</h2>
+        <form id="joinForm" class="stack">
+          <label>
+            Display name
+            <input id="nameInput" autocomplete="name" maxlength="32" placeholder="Your name">
+          </label>
+          <button type="submit">Join</button>
+        </form>
+      </section>
+
+      <section id="gameCard" class="panel hidden">
+        <div id="status"></div>
+        <form id="answerForm" class="stack hidden">
+          <label>
+            Your answer
+            <textarea id="answerInput" maxlength="240" rows="5" placeholder="Type something memorable"></textarea>
+          </label>
+          <button type="submit">Submit Answer</button>
+        </form>
+
+        <form id="voteForm" class="stack hidden">
+          <div id="voteList" class="vote-list"></div>
+          <button type="submit">Lock Votes</button>
+        </form>
+      </section>
+    </main>
+    <script src="/player.js"></script>
+  </body>
+</html>
