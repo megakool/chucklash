@@ -79,11 +79,14 @@ function startTimer(phase) {
   const durations = { answering: 3 * 60 * 1000, voting: 30 * 1000 };
   const duration = durations[phase];
   if (!duration) return;
-  if (timerState.phase === phase) return; // already running
+
+  // Sync to server-recorded start time; skip restart only if already in sync
+  const serverStart = state.phaseStartedAt || Date.now();
+  if (timerState.phase === phase && timerState.startedAt === serverStart) return;
 
   stopTimer();
   timerState.phase = phase;
-  timerState.startedAt = Date.now();
+  timerState.startedAt = serverStart;
   timerState.durationMs = duration;
 
   function tick() {
@@ -159,8 +162,9 @@ function renderLobby() {
 
 function renderAnswering() {
   startTimer("answering");
-  const total   = Math.max(1, answererCount());
-  const percent = Math.min(100, Math.round((state.answers.length / total) * 100));
+  const done  = state.roundPlayersDone || 0;
+  const total = Math.max(1, state.players.length);
+  const percent = Math.min(100, Math.round((done / total) * 100));
 
   els.screenStage.innerHTML = `
     <div class="screen-submit">
@@ -170,15 +174,15 @@ function renderAnswering() {
         <p class="screen-lede">The prompt is private for now. Write something clever, short, and just risky enough.</p>
       </section>
       <section class="submit-counter">
-        <p class="eyebrow">Answers In</p>
+        <p class="eyebrow">Players Done</p>
         <div class="answer-count">
-          <span class="answer-count-number">${state.answers.length}</span>
+          <span class="answer-count-number">${done}</span>
           <span class="answer-count-slash">/</span>
           <span class="answer-count-number">${total}</span>
         </div>
-        <p class="answer-count-caption">${state.answers.length === total ? "everyone is in" : "players have submitted"}</p>
+        <p class="answer-count-caption">${done === total ? "everyone is in" : "players have submitted"}</p>
         <div class="dot-grid">${Array.from({ length: total }, (_, i) =>
-          `<span class="${i < state.answers.length ? "filled" : ""}"></span>`
+          `<span class="${i < done ? "filled" : ""}"></span>`
         ).join("")}</div>
         <div class="screen-progress"><span style="width:${percent}%"></span></div>
       </section>
